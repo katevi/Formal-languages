@@ -1,3 +1,4 @@
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -11,6 +12,7 @@ public class Main {
     private static int nonTerminalsCounter = 11;
     private static int semanticsCounter = 101;
     private final static Map<Integer, String> dictionarySeparators = new HashMap<>();
+    private final static Map<Integer, String> dictionaryTerminalsInCommas = new HashMap<>();
     private final static Map<Integer, String> dictionaryTerminals = new HashMap<>();
     private final static Map<Integer, String> dictionaryNonTerminals = new HashMap<>();
     private final static Map<Integer, String> dictionarySemantics = new HashMap<>();
@@ -33,7 +35,6 @@ public class Main {
 
     public static String codeGrammar(String text) {
         initializeCodesOfLexemes();
-        text = text.replace(" ", "");
         char[] lexemes = text.toCharArray();
 
         parseGrammar(lexemes);
@@ -60,6 +61,7 @@ public class Main {
 
     private static void printDictionaries() {
         System.out.println("1. Dictionary of terminals");
+        dictionaryTerminalsInCommas.entrySet().forEach(t -> System.out.println("Code = " + t.getKey() + ", value = " + t.getValue()));
         dictionaryTerminals.entrySet().forEach(t -> System.out.println("Code = " + t.getKey() + ", value = " + t.getValue()));
         System.out.println("2. Dictionary of nonterminals");
         dictionaryNonTerminals.entrySet().forEach(t -> System.out.println("Code = " + t.getKey() + ", value = " + t.getValue()));
@@ -71,25 +73,33 @@ public class Main {
 
     private static String codeGrammarInternally(String text) {
         String result = text;
+        for (Map.Entry<Integer, String> i : dictionaryTerminalsInCommas.entrySet()) {
+            result = result.replace("\'" + i.getValue() + "\'", String.valueOf(" " + i.getKey() + " "));
+        }
         for (Map.Entry<Integer, String> i : dictionaryTerminals.entrySet()) {
-            result = result.replace("\'" + i.getValue() + "\'", String.valueOf(i.getKey()));
+            result = result.replace(i.getValue(), " " + String.valueOf(i.getKey()) + " ");
         }
         for (Map.Entry<Integer,String> i : dictionarySemantics.entrySet()) {
-            result = result.replace("$" + i.getValue(), String.valueOf(i.getKey()));
+            result = result.replace("$" + i.getValue(), " " + String.valueOf(i.getKey()) + " ");
         }
         for (Map.Entry<Integer,String> i : dictionaryNonTerminals.entrySet()) {
-            result = result.replace(i.getValue(), String.valueOf(i.getKey()));
+            result = result.replace(i.getValue(), " " + i.getKey().toString() + " ");
         }
         for (Map.Entry<Integer,String> i : dictionarySeparators.entrySet()) {
-            result = result.replace(i.getValue(), String.valueOf(i.getKey()));
+            result = result.replace(i.getValue(), " " + String.valueOf(i.getKey()) + " ");
         }
+        for (Map.Entry<Integer, String> i : dictionaryTerminalsInCommas.entrySet()) {
+            result = result.replace(i.getValue(), " " + String.valueOf(i.getKey()) + " ");
+        }
+        result = result.replaceAll("\\s+", " ");
+        result = result.substring(1);
         return result;
     }
 
     private static void cleanDictionaries() {
         dictionarySeparators.clear();
         dictionaryNonTerminals.clear();
-        dictionaryTerminals.clear();
+        dictionaryTerminalsInCommas.clear();
         dictionarySemantics.clear();
         terminalsCounter = 51;
         nonTerminalsCounter = 11;
@@ -97,28 +107,9 @@ public class Main {
     }
 
     private static void parseGrammar(char[] lexemes) {
-        int counter = 1;
+        int counter = 0;
+        fillDictionaryOfNonTerminals(lexemes);
         while (counter < lexemes.length) {
-            //firstly we always meet an expression
-            if (counter == 1) {
-                StringBuilder expression = new StringBuilder();
-                while (lexemes[counter - 1] != ':') {
-                    expression.append(lexemes[counter - 1]);
-                    counter++;
-                }
-                counter++;
-                addNonTerminal(expression.toString());
-            }
-            if (lexemes[counter] == '.') {
-                counter++;
-                StringBuilder expression = new StringBuilder();
-                while (counter < lexemes.length  && lexemes[counter] != ':') {
-                    expression.append(lexemes[counter]);
-                    counter++;
-                }
-                addNonTerminal(expression.toString());
-            }
-            if (counter == lexemes.length) return;
             if (lexemes[counter] == '$') {
                 counter++;
                 StringBuilder semantics = new StringBuilder();
@@ -128,10 +119,7 @@ public class Main {
                 }
                 addSemantics(semantics.toString());
             }
-            if (checkIfSymbolTerminal(lexemes, counter)) {
-                addTerminal(String.valueOf(lexemes[counter]));
-                counter++;
-            }
+            if (counter == lexemes.length) return;
             if (lexemes[counter] == '\'') {
                 counter++;
                 StringBuilder terminalInCommas = new StringBuilder();
@@ -141,13 +129,73 @@ public class Main {
                 }
                 addTerminal(terminalInCommas.toString());
             }
+            if (counter == lexemes.length) return;
+            StringBuilder terminalString = new StringBuilder();
+            if (lexemes[counter] >= 'a' && lexemes[counter] <= 'z') {
+                terminalString.append(lexemes[counter]);
+                counter++;
+                while (counter < lexemes.length && !checkIfServiceSymbol(lexemes[counter])) {
+                    terminalString.append(lexemes[counter]);
+                    counter++;
+                }
+                if (!dictionaryNonTerminals.containsValue(terminalString.toString())) {
+                    dictionaryTerminals.put(terminalsCounter, terminalString.toString());
+                    terminalsCounter++;
+                }
+            } else {
+                // met nonterminal
+                while (counter < lexemes.length && !checkIfServiceSymbol(lexemes[counter])) {
+                    counter++;
+                }
+            }
+            if (counter == lexemes.length) return;
+            counter++;
+        }
+    }
+
+    private static void fillDictionaryOfNonTerminals(char[] lexemes) {
+        int counter = 1;
+        while (counter < lexemes.length) {
+            if (counter == 1) {
+                StringBuilder expression = new StringBuilder();
+                while (lexemes[counter - 1] != ':') {
+                    if (lexemes[counter - 1] != ' ') {
+                        expression.append(lexemes[counter - 1]);
+                    }
+                    counter++;
+                }
+                counter++;
+                addNonTerminal(expression.toString());
+            }
+            if (counter == lexemes.length) return;
+            if (lexemes[counter] == '.' && lexemes[counter - 1] != '\'') {
+                counter++;
+                StringBuilder expression = new StringBuilder();
+                while (counter < lexemes.length  && lexemes[counter] != ':') {
+                    if (lexemes[counter] != ' ') {
+                        expression.append(lexemes[counter]);
+                    }
+                    counter++;
+                }
+                addNonTerminal(expression.toString());
+            }
+            if (counter == lexemes.length) return;
+            if (lexemes[counter] >= 'A' && lexemes[counter] <= 'Z') {
+                StringBuilder expression = new StringBuilder();
+                expression.append(lexemes[counter]);
+                counter++;
+                while (counter < lexemes.length  && !checkIfServiceSymbol(lexemes[counter])) {
+                    expression.append(lexemes[counter]);
+                    counter++;
+                }
+            }
             counter++;
         }
     }
 
     private static void addTerminal(String value) {
-        if (!dictionaryTerminals.containsValue(value)) {
-            dictionaryTerminals.put(terminalsCounter, value);
+        if (!dictionaryTerminalsInCommas.containsValue(value)) {
+            dictionaryTerminalsInCommas.put(terminalsCounter, value);
             terminalsCounter++;
         }
     }
@@ -166,16 +214,10 @@ public class Main {
         }
     }
 
-    private static boolean checkIfSymbolTerminal(char[] lexemes, int counter) {
-        return (checkIfServiceSymbol(lexemes[counter - 1])
-                && checkIfServiceSymbol(lexemes[counter + 1])
-                && Character.isLowerCase(lexemes[counter]));
-    }
-
     private static boolean checkIfServiceSymbol(char symbol) {
         return (symbol == ',' || symbol == '.' || symbol == ';' ||
                 symbol == '*' || symbol == '#' || symbol == '\'' ||
                 symbol == '(' || symbol == ')' ||
-                symbol == '[' || symbol == ']');
+                symbol == '[' || symbol == ']' || symbol == ' ');
     }
 }
