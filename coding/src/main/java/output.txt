@@ -1,0 +1,61 @@
+Welcome to the Coding! Please, name the file with grammar "expression.txt" and put it at the same folder, as exe.
+During coding next dictionaries were build:
+1. Dictionary of terminals
+Code = 64, value = <char>
+Code = 65, value = <string>
+Code = 66, value = ?
+Code = 67, value = :
+Code = 51, value = ,
+Code = 52, value = <operation>
+Code = 53, value = <assignation>
+Code = 54, value = <increment>
+Code = 55, value = <tag>
+Code = 56, value = [
+Code = 57, value = ]
+Code = 58, value = (
+Code = 59, value = )
+Code = 60, value = .
+Code = 61, value = ->
+Code = 62, value = <label>
+Code = 63, value = <number>
+2. Dictionary of nonterminals
+Code = 11, value = expression
+Code = 12, value = formula
+Code = 13, value = operand
+3. Dictionary of semantics
+Code = 101, value = opcode1
+Code = 102, value = operand
+Code = 103, value = opcode2
+Code = 104, value = incr1
+Code = 105, value = tag
+Code = 106, value = incr2
+Code = 107, value = array1
+Code = 108, value = array2
+Code = 109, value = call1
+Code = 110, value = call2
+Code = 111, value = call3
+Code = 112, value = ident
+Code = 113, value = op1
+Code = 114, value = op2
+Code = 115, value = dot
+Code = 116, value = arrow
+Code = 117, value = field
+Code = 118, value = number
+Code = 119, value = char
+Code = 120, value = string
+Code = 121, value = cond1
+Code = 122, value = cond2
+4. Dictionary of service symbols (separators and Eofgram)
+Code = 1, value = :
+Code = 2, value = (
+Code = 3, value = )
+Code = 4, value = .
+Code = 5, value = *
+Code = 6, value = ;
+Code = 7, value = ,
+Code = 8, value = #
+Code = 1000, value = Eofgram
+Code = 9, value = [
+Code = 10, value = ]
+Result of grammar coding:
+111212352513412125210152313102352210353610352334131221045410555610555210654621075612108573561095891111010111596112361135811114593921156061166131175510610562611863611964612065352121661112267341000

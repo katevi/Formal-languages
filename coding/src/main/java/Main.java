@@ -74,22 +74,19 @@ public class Main {
     private static String codeGrammarInternally(String text) {
         String result = text;
         for (Map.Entry<Integer, String> i : dictionaryTerminalsInCommas.entrySet()) {
-            result = result.replace("\'" + i.getValue() + "\'", String.valueOf(" " + i.getKey() + " "));
-        }
-        for (Map.Entry<Integer, String> i : dictionaryTerminals.entrySet()) {
-            result = result.replace(i.getValue(), " " + String.valueOf(i.getKey()) + " ");
+            result = result.replace("\'" + i.getValue() + "\'", (" " + i.getKey() + " "));
         }
         for (Map.Entry<Integer,String> i : dictionarySemantics.entrySet()) {
-            result = result.replace("$" + i.getValue(), " " + String.valueOf(i.getKey()) + " ");
+            result = result.replace("$" + i.getValue(), " " + (i.getKey()) + " ");
         }
         for (Map.Entry<Integer,String> i : dictionaryNonTerminals.entrySet()) {
             result = result.replace(i.getValue(), " " + i.getKey().toString() + " ");
         }
         for (Map.Entry<Integer,String> i : dictionarySeparators.entrySet()) {
-            result = result.replace(i.getValue(), " " + String.valueOf(i.getKey()) + " ");
+            result = result.replace(i.getValue(), " " + (i.getKey()) + " ");
         }
-        for (Map.Entry<Integer, String> i : dictionaryTerminalsInCommas.entrySet()) {
-            result = result.replace(i.getValue(), " " + String.valueOf(i.getKey()) + " ");
+        for (Map.Entry<Integer, String> i : dictionaryTerminals.entrySet()) {
+            result = result.replace(i.getValue(), " " + (i.getKey()) + " ");
         }
         result = result.replaceAll("\\s+", " ");
         result = result.substring(1);
