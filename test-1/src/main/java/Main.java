@@ -41,7 +41,7 @@ public class Main {
         return index;
     }
 
-    private static void writeToFile(String indexPrint) {
+    public static void writeToFile(String indexPrint) {
         try {
             FileWriter writer = new FileWriter("alphabetical-index.txt");
             writer.write(indexPrint);
@@ -51,12 +51,13 @@ public class Main {
         }
     }
 
-    private static String cleanFromSeparators(String string) {
+    public static String cleanFromSeparators(String string) {
         string = string.replace(",", "");
         string = string.replace(".", "");
         string = string.replace(";", "");
         string = string.replace("?", "");
-        return string.replace("!", "");
+        string =  string.replace("!", "");
+        return string;
     }
 
     public static String printAlphabeticalIndex(Multimap<String, Integer> alphabeticalIndex) {
