@@ -26,10 +26,19 @@ public class Main {
         try {
             fileContent = Files.lines(Paths.get("expression.txt"));
             List<String> grammarStrings = fileContent.collect(Collectors.toList());
+            int counter = 0;
             for (String i : grammarStrings) {
-                text = text + i + "\n";
+                if (counter == grammarStrings.size() - 1) {
+                    text = text + i;
+                } else {
+                    text = text + i + "\n";
+                }
+                counter++;
             }
-            //text = fileContent.collect(Collectors.joining());
+            if (!text.contains("Eofgram")) {
+                System.out.println("Invalid format of input: there is no Eofgram.");
+                System.exit(-1);
+            }
         } catch (IOException e) {
             System.out.println("File expression.txt not found.");
         }
@@ -127,6 +136,7 @@ public class Main {
                     terminalInCommas.append(lexemes[counter]);
                     counter++;
                 }
+                counter++;
                 addTerminal(terminalInCommas.toString());
             }
             if (counter == lexemes.length) return;
@@ -139,6 +149,10 @@ public class Main {
                     counter++;
                 }
                 if (!dictionaryNonTerminals.containsValue(terminalString.toString())) {
+                    if (terminalsCounter > 100) {
+                        System.out.println("Invalid format of input: number of terminals greater, than possible (>100). ");
+                        System.exit(-1);
+                    }
                     dictionaryTerminals.put(terminalsCounter, terminalString.toString());
                     terminalsCounter++;
                 }
@@ -195,6 +209,10 @@ public class Main {
 
     private static void addTerminal(String value) {
         if (!dictionaryTerminalsInCommas.containsValue(value)) {
+            if (terminalsCounter > 100) {
+                System.out.println("Invalid format of input: number of terminals greater, than possible (>100). ");
+                System.exit(-1);
+            }
             dictionaryTerminalsInCommas.put(terminalsCounter, value);
             terminalsCounter++;
         }
@@ -202,6 +220,10 @@ public class Main {
 
     private static void addNonTerminal(String value) {
         if (!dictionaryNonTerminals.containsValue(value) && !value.equals("Eofgram")) {
+            if (nonTerminalsCounter > 50) {
+                System.out.println("Invalid format of input: number of terminals greater, than possible (> 50).");
+                System.exit(-1);
+            }
             dictionaryNonTerminals.put(nonTerminalsCounter, value);
             nonTerminalsCounter++;
         }
@@ -209,6 +231,10 @@ public class Main {
 
     private static void addSemantics(String value) {
         if (!dictionarySemantics.containsValue(value)) {
+            if (semanticsCounter > 150) {
+                System.out.println("Invalid format of input: number of terminals greater, than possible (>150). ");
+                System.exit(-1);
+            }
             dictionarySemantics.put(semanticsCounter, value);
             semanticsCounter++;
         }
