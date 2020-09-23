@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,7 +25,11 @@ public class Main {
                 "and put it at the same folder, as exe.");
         try {
             fileContent = Files.lines(Paths.get("expression.txt"));
-            text = fileContent.collect(Collectors.joining());
+            List<String> grammarStrings = fileContent.collect(Collectors.toList());
+            for (String i : grammarStrings) {
+                text = text + i + "\n";
+            }
+            //text = fileContent.collect(Collectors.joining());
         } catch (IOException e) {
             System.out.println("File expression.txt not found.");
         }
@@ -74,22 +79,20 @@ public class Main {
     private static String codeGrammarInternally(String text) {
         String result = text;
         for (Map.Entry<Integer, String> i : dictionaryTerminalsInCommas.entrySet()) {
-            result = result.replace("\'" + i.getValue() + "\'", (" " + i.getKey() + " "));
+            result = result.replace("\'" + i.getValue() + "\'", (i.getKey() + " "));
         }
         for (Map.Entry<Integer,String> i : dictionarySemantics.entrySet()) {
-            result = result.replace("$" + i.getValue(), " " + (i.getKey()) + " ");
+            result = result.replace("$" + i.getValue(), (i.getKey()) + " ");
         }
         for (Map.Entry<Integer,String> i : dictionaryNonTerminals.entrySet()) {
-            result = result.replace(i.getValue(), " " + i.getKey().toString() + " ");
+            result = result.replace(i.getValue(), i.getKey().toString() + " ");
         }
         for (Map.Entry<Integer,String> i : dictionarySeparators.entrySet()) {
-            result = result.replace(i.getValue(), " " + (i.getKey()) + " ");
+            result = result.replace(i.getValue(),(i.getKey()) + " ");
         }
         for (Map.Entry<Integer, String> i : dictionaryTerminals.entrySet()) {
-            result = result.replace(i.getValue(), " " + (i.getKey()) + " ");
+            result = result.replace(i.getValue(), (i.getKey()) + " ");
         }
-        result = result.replaceAll("\\s+", " ");
-        result = result.substring(1);
         return result;
     }
 
@@ -165,7 +168,7 @@ public class Main {
                 addNonTerminal(expression.toString());
             }
             if (counter == lexemes.length) return;
-            if (lexemes[counter] == '.' && lexemes[counter - 1] != '\'') {
+            if (lexemes[counter - 1] == '.' && lexemes[counter] == '\n' && lexemes[counter - 1] != '\'') {
                 counter++;
                 StringBuilder expression = new StringBuilder();
                 while (counter < lexemes.length  && lexemes[counter] != ':') {
@@ -215,6 +218,6 @@ public class Main {
         return (symbol == ',' || symbol == '.' || symbol == ';' ||
                 symbol == '*' || symbol == '#' || symbol == '\'' ||
                 symbol == '(' || symbol == ')' ||
-                symbol == '[' || symbol == ']' || symbol == ' ');
+                symbol == '[' || symbol == ']' || symbol == ' ' || symbol == '\n');
     }
 }
