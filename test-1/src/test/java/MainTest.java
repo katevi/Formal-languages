@@ -45,4 +45,11 @@ public class MainTest {
         System.out.println(Main.printAlphabeticalIndex(Main.generateAlphabeticalIndex(map)));
         Main.writeToFile(Main.printAlphabeticalIndex(Main.generateAlphabeticalIndex(map)));
     }
+
+    @Test
+    public void printAlphabeticalIndex3() {
+        Map<Integer, String[]> map = readTextFromFile("test3.txt");
+        System.out.println(Main.printAlphabeticalIndex(Main.generateAlphabeticalIndex(map)));
+        Main.writeToFile(Main.printAlphabeticalIndex(Main.generateAlphabeticalIndex(map)));
+    }
 }

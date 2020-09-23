@@ -57,6 +57,8 @@ public class Main {
         string = string.replace(";", "");
         string = string.replace("?", "");
         string =  string.replace("!", "");
+        string =  string.replace("...", "");
+        string = string.replace("--", "");
         return string;
     }
 
