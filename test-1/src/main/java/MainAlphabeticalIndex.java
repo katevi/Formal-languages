@@ -5,7 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
-public class Main {
+public class MainAlphabeticalIndex {
     private static final Map<Integer, String[]> text = new HashMap<>();
 
     public static void main(String[] args) {

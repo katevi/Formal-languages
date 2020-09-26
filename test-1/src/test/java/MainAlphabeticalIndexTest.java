@@ -3,16 +3,12 @@ import org.junit.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
-
-public class MainTest {
+public class MainAlphabeticalIndexTest {
     private Map<Integer, String[]> readTextFromFile(String filename) {
         Map<Integer, String[]> map = new TreeMap<>();
         try {
@@ -20,7 +16,7 @@ public class MainTest {
             String text = "";
             int counter = 1;
             for (String i : streamText.collect(Collectors.toList())) {
-                i = Main.cleanFromSeparators(i);
+                i = MainAlphabeticalIndex.cleanFromSeparators(i);
                 String[] words = i.split(" ");
                 map.put(counter, words);
                 counter++;
@@ -35,21 +31,21 @@ public class MainTest {
     @Test
     public void printAlphabeticalIndex1() {
         Map<Integer, String[]> map = readTextFromFile("test1.txt");
-        System.out.println(Main.printAlphabeticalIndex(Main.generateAlphabeticalIndex(map)));
-        Main.writeToFile(Main.printAlphabeticalIndex(Main.generateAlphabeticalIndex(map)));
+        System.out.println(MainAlphabeticalIndex.printAlphabeticalIndex(MainAlphabeticalIndex.generateAlphabeticalIndex(map)));
+        MainAlphabeticalIndex.writeToFile(MainAlphabeticalIndex.printAlphabeticalIndex(MainAlphabeticalIndex.generateAlphabeticalIndex(map)));
     }
 
     @Test
     public void printAlphabeticalIndex2() {
         Map<Integer, String[]> map = readTextFromFile("test2.txt");
-        System.out.println(Main.printAlphabeticalIndex(Main.generateAlphabeticalIndex(map)));
-        Main.writeToFile(Main.printAlphabeticalIndex(Main.generateAlphabeticalIndex(map)));
+        System.out.println(MainAlphabeticalIndex.printAlphabeticalIndex(MainAlphabeticalIndex.generateAlphabeticalIndex(map)));
+        MainAlphabeticalIndex.writeToFile(MainAlphabeticalIndex.printAlphabeticalIndex(MainAlphabeticalIndex.generateAlphabeticalIndex(map)));
     }
 
     @Test
     public void printAlphabeticalIndex3() {
         Map<Integer, String[]> map = readTextFromFile("test3.txt");
-        System.out.println(Main.printAlphabeticalIndex(Main.generateAlphabeticalIndex(map)));
-        Main.writeToFile(Main.printAlphabeticalIndex(Main.generateAlphabeticalIndex(map)));
+        System.out.println(MainAlphabeticalIndex.printAlphabeticalIndex(MainAlphabeticalIndex.generateAlphabeticalIndex(map)));
+        MainAlphabeticalIndex.writeToFile(MainAlphabeticalIndex.printAlphabeticalIndex(MainAlphabeticalIndex.generateAlphabeticalIndex(map)));
     }
 }
