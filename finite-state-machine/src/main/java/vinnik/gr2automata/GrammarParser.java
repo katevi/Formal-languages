@@ -1,14 +1,13 @@
 package vinnik.gr2automata;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class GrammarParser {
+
     public Grammar readGrammarFromFile() {
         List<String> grammarStrings = new ArrayList<>();
         try {
@@ -29,36 +28,68 @@ public class GrammarParser {
         Set<Terminal> terminals = new LinkedHashSet<>();
         Set<NonTerminal> nonterminals = new LinkedHashSet<>();
         Set<Relation> relations = new LinkedHashSet<>();
+
         for (String string : grammarStrings) {
             int j = 0;
             string = string.replace(" ", "");
             char[] lexemes = string.toCharArray();
-            Relation relation = new Relation();
+            //Relation relation = new Relation();
+            StringBuilder oldNonTerminal = new StringBuilder();
             while (j < lexemes.length) {
-                if (lexemes[j] == '<') {
-                    boolean oldNonTerminal = false;
-                    if (j == 0) {
-                        oldNonTerminal = true;
-                    }
+                if (lexemes[j] == '<' && j == 0) {
                     j++;
-                    StringBuilder nonterminal = new StringBuilder();
                     while (lexemes[j] != '>') {
-                        nonterminal.append(lexemes[j]);
+                        oldNonTerminal.append(lexemes[j]);
                         j++;
                     }
-                    if (oldNonTerminal) {
-                        relation.putOldNonTerminal(new NonTerminal(nonterminal.toString()));
-                        oldNonTerminal = false;
+                    j++;
+                    addNonTerminal(nonterminals, new NonTerminal(oldNonTerminal.toString()));
+                }
+                if (lexemes[j] == ':' && lexemes[j + 1] == ':' && lexemes[j + 2] == '=') {
+                    j = j + 3;
+
+                    String rightPartOfRule = string.substring(j);
+                    String[] rightPartsOfRelation = rightPartOfRule.split("\\|");
+
+                    for (String i : rightPartsOfRelation) {
+
+                        char[] lexemesOfRulePart = i.toCharArray();
+                        int k = 0;
+                        StringBuilder terminal = new StringBuilder();
+                        StringBuilder newNonTerminal = new StringBuilder();
+
+                        while (k < lexemesOfRulePart.length) {
+                            while (k < lexemesOfRulePart.length && lexemesOfRulePart[k] != '<') {
+                                terminal.append(lexemesOfRulePart[k]);
+                                k++;
+                            }
+                            addTerminal(terminals, new Terminal(terminal.toString()));
+                            if (k < lexemesOfRulePart.length && lexemesOfRulePart[k] == '<') {
+                                k++;
+                                while (lexemesOfRulePart[k] != '>') {
+                                    newNonTerminal.append(lexemesOfRulePart[k]);
+                                    k++;
+                                }
+                                k++;
+                            }
+                        }
+                        Relation relation = new Relation(
+                                new Terminal(terminal.toString()),
+                                new NonTerminal(newNonTerminal.toString()),
+                                new NonTerminal(oldNonTerminal.toString()));
+                        relations.add(relation);
                     }
-                    addNonTerminal(nonterminals, new NonTerminal(nonterminal.toString()));
                 }
                 j++;
             }
-            relations.add(relation);
         }
         nonterminals.forEach(t -> System.out.print(t.getValue() + " "));
         System.out.println();
-        relations.forEach(t -> System.out.print(t.getOldNonTerminal().getValue() + " "));
+        relations.forEach(t -> System.out.println(t.getOldNonTerminal().getValue()
+                + " "
+                + t.getTerminal().getValue() + " "
+                + t.getNewNonTerminal().getValue()));
+        terminals.forEach(t -> System.out.print(t.getValue() + " "));
         return new Grammar(relations, nonterminals, terminals);
     }
 
