@@ -6,4 +6,8 @@ public class Terminal {
     public Terminal(String value) {
         this.value = value;
     }
+
+    public String getValue() {
+        return value;
+    }
 }
