@@ -5,9 +5,9 @@ import java.util.Set;
 public class Transition {
     private final State oldState;
     private final Set<State> newStates;
-    private final char input;
+    private final String input;
 
-    public Transition(State oldState, char input, Set<State> newStates) {
+    public Transition(State oldState, String input, Set<State> newStates) {
         this.oldState = oldState;
         this.newStates = newStates;
         this.input = input;
@@ -23,7 +23,11 @@ public class Transition {
         return this.newStates;
     }
 
-    public char getInput() {
+    public String getInput() {
         return this.input;
+    }
+
+    public State getOldState() {
+        return oldState;
     }
 }
