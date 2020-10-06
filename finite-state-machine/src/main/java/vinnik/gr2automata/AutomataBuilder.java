@@ -3,6 +3,7 @@ package vinnik.gr2automata;
 import java.util.*;
 import java.util.stream.Collectors;
 public class AutomataBuilder {
+    private final static String EPSILON_STATE = "epsilon";
 
     private final State attachedState = new State("AState");
 
@@ -11,9 +12,13 @@ public class AutomataBuilder {
         Set<State> initialStates = buildInitalStates(grammar);
         Set<State> finalStates = buildFinalStates(grammar, attachedState);
         Set<Transition> transitions = buildTransitions(grammar);
+        Set<InputSymbol> symbols = buildInputSymbols(grammar);
 
-        Automata automata = new Automata(initialStates, finalStates,transitions);
-        return automata;
+        return new Automata(initialStates, finalStates,transitions, symbols);
+    }
+
+    private Set<InputSymbol> buildInputSymbols(Grammar grammar) {
+        return grammar.getTerminals().stream().map(t -> new InputSymbol(t.getValue())).collect(Collectors.toSet());
     }
 
     private Set<Transition> buildTransitions(Grammar grammar) {
@@ -85,7 +90,7 @@ public class AutomataBuilder {
         grammar
                 .getRelations()
                 .stream()
-                .anyMatch(t -> (t.getTerminal().getValue().equals("epsilon") &&
+                .anyMatch(t -> (t.getTerminal().getValue().equals(EPSILON_STATE) &&
                         t.getOldNonTerminal().getValue().equals(grammar.getStartNonterminal().getValue())));
     }
 }
