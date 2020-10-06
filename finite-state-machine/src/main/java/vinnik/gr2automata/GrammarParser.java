@@ -28,12 +28,13 @@ public class GrammarParser {
         Set<Terminal> terminals = new LinkedHashSet<>();
         Set<NonTerminal> nonterminals = new LinkedHashSet<>();
         Set<Relation> relations = new LinkedHashSet<>();
+        StringBuilder startNonTerminal = new StringBuilder();
 
+        int stringCounter = 0;
         for (String string : grammarStrings) {
             int j = 0;
             string = string.replace(" ", "");
             char[] lexemes = string.toCharArray();
-            //Relation relation = new Relation();
             StringBuilder oldNonTerminal = new StringBuilder();
             while (j < lexemes.length) {
                 if (lexemes[j] == '<' && j == 0) {
@@ -43,6 +44,10 @@ public class GrammarParser {
                         j++;
                     }
                     j++;
+                    if (stringCounter == 0) {
+                        startNonTerminal.append(oldNonTerminal);
+                        stringCounter++;
+                    }
                     addNonTerminal(nonterminals, new NonTerminal(oldNonTerminal.toString()));
                 }
                 if (lexemes[j] == ':' && lexemes[j + 1] == ':' && lexemes[j + 2] == '=') {
@@ -90,7 +95,9 @@ public class GrammarParser {
                 + t.getTerminal().getValue() + " "
                 + t.getNewNonTerminal().getValue()));
         terminals.forEach(t -> System.out.print(t.getValue() + " "));
-        return new Grammar(relations, nonterminals, terminals);
+        System.out.println();
+        System.out.println("Start nonterminal" + startNonTerminal);
+        return new Grammar(relations, nonterminals, terminals, new NonTerminal(startNonTerminal.toString()));
     }
 
     private void addNonTerminal(Set<NonTerminal> nonterminals, NonTerminal nonTerminal) {
