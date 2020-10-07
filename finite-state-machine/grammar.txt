@@ -1,4 +1,4 @@
-<NUMBER> ::= d | d <FRACTION> | d <EXPONENT> | d <FLOAT> | d <NUMBER> |
+<NUMBER> ::= d | d <FRACTION> | d <EXPONENT> | d <FLOAT> | d <NUMBER>
 <FRACTION> ::= . <INT>
 <INT> ::= d | d <INT>
 <EXPONENT> ::= e <INTEGER>
