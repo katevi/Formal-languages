@@ -51,8 +51,12 @@ public class AutomataBuilder {
         if (hasEmptyState(newStates)) {
             newStates.removeIf(t -> t.getStateName().equals(""));
             if (terminal.getValue().equals(EPSILON_STATE)) {
+                // if terminal was epsilon, that new state after transition will be old state
+                // (and will be final state)
                 newStates.add(new State(nonTerminal.getValue()));
             } else {
+                // if terminal was not an epsilon, it means that it is transition like A -> b
+                // so we need to add attachedState
                 newStates.add(attachedState);
             }
         }
@@ -77,7 +81,18 @@ public class AutomataBuilder {
     private Set<State> buildFinalStates(Grammar grammar, State attachedState) {
         Set<State> result = new LinkedHashSet<>();
         if (existsSpecialRelation(grammar)) {
-            result.addAll(Arrays.asList(attachedState, new State(grammar.getStartNonterminal().getValue())));
+            // In all relations, which have epsilon in the right part
+            // nonterminal in the left part of the rule is final state of ndfa
+            List<State> finalStates = grammar
+                    .getRelations()
+                    .stream()
+                    .filter(t -> t.getTerminal().getValue().equals(EPSILON_STATE))
+                    .map(Relation::getOldNonTerminal)
+                    .map(t -> new State(t.getValue()))
+                    .collect(Collectors.toList());
+            // Added all such nonterminals
+            result.addAll(finalStates);
+            result.add(attachedState);
             return result;
         }
         result.add(attachedState);
@@ -85,11 +100,10 @@ public class AutomataBuilder {
     }
 
     private boolean existsSpecialRelation(Grammar grammar) {
-        return
-        grammar
+        return grammar
                 .getRelations()
                 .stream()
                 .anyMatch(t -> (t.getTerminal().getValue().equals(EPSILON_STATE) &&
-                        t.getOldNonTerminal().getValue().equals(grammar.getStartNonterminal().getValue())));
+                        t.getNewNonTerminal().getValue().equals("")));
     }
 }
