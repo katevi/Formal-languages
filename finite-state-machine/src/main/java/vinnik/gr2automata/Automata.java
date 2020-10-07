@@ -39,8 +39,8 @@ public class Automata {
                 int finalI = i;
                 int finalJ = j;
                 Transition transition = this.getTransitions().stream().filter(t ->
-                        t.getOldState().getStateName().equals(tableOfTransitions[0][finalJ])
-                                && t.getInput().equals(tableOfTransitions[finalI][0])).findFirst().orElse(null);
+                        t.getOldState().getStateName().equals(tableOfTransitions[finalI][0])
+                                && t.getInput().equals(tableOfTransitions[0][finalJ])).findFirst().orElse(null);
                 StringBuilder states = new StringBuilder();
                 states.append("{");
                 if (transition != null) {
@@ -59,16 +59,16 @@ public class Automata {
     }
 
     private String[][] creteTableWithHeaders() {
-        String[][] tableOfTransitions = new String[this.getInputSymbols().size() + 1][this.getInitialStates().size() + 1];
+        String[][] tableOfTransitions = new String[this.getInitialStates().size() + 1][this.getInputSymbols().size() + 1];
 
         int counter = 1;
         for (InputSymbol symbol : this.getInputSymbols()) {
-            tableOfTransitions[counter][0] = symbol.getInputSymbol();
+            tableOfTransitions[0][counter] = symbol.getInputSymbol();
             counter++;
         }
         counter = 1;
         for (State state : this.getInitialStates()) {
-            tableOfTransitions[0][counter] = state.getStateName();
+            tableOfTransitions[counter][0] = state.getStateName();
             counter++;
         }
         return tableOfTransitions;
