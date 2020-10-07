@@ -44,11 +44,11 @@ public class AutomataBuilder {
                         t.getTerminal().getValue().equals(terminal.getValue()))
                 .map(Relation::getNewNonTerminal)
                 .collect(Collectors.toList());
-        System.out.println("possible non terminals for " + terminal.getValue() + " " + nonTerminal.getValue());
+        /*System.out.println("possible non terminals for " + terminal.getValue() + " " + nonTerminal.getValue());
         for (NonTerminal possibleNonTerminal : possibleNonTerminals) {
             System.out.print(possibleNonTerminal.getValue() + "|");
         }
-        System.out.println();
+        System.out.println();*/
         Set<State> newStates = possibleNonTerminals
                 .stream()
                 .map(t -> new State(t.getValue()))

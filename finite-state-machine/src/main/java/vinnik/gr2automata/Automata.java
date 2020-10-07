@@ -30,4 +30,47 @@ public class Automata {
     public Set<InputSymbol> getInputSymbols() {
         return inputSymbols;
     }
+
+    public String[][] buildTableOfTransitions() {
+        String[][] tableOfTransitions = creteTableWithHeaders();
+        tableOfTransitions[0][0] = "";
+        for (int i = 1; i < tableOfTransitions.length; i++) {
+            for (int j = 1; j < tableOfTransitions[0].length; j++) {
+                int finalI = i;
+                int finalJ = j;
+                Transition transition = this.getTransitions().stream().filter(t ->
+                        t.getOldState().getStateName().equals(tableOfTransitions[0][finalJ])
+                                && t.getInput().equals(tableOfTransitions[finalI][0])).findFirst().orElse(null);
+                StringBuilder states = new StringBuilder();
+                states.append("{");
+                if (transition != null) {
+                    transition.getNewStates().stream().forEach(t -> states.append(t.getStateName() + ","));
+                    if (transition.getNewStates().size() > 0) {
+                        states.deleteCharAt(states.length() - 1);
+                    }
+                    states.append("}");
+                    tableOfTransitions[i][j] = states.toString();
+                } else {
+                    tableOfTransitions[i][j] = "{}";
+                }
+            }
+        }
+        return tableOfTransitions;
+    }
+
+    private String[][] creteTableWithHeaders() {
+        String[][] tableOfTransitions = new String[this.getInputSymbols().size() + 1][this.getInitialStates().size() + 1];
+
+        int counter = 1;
+        for (InputSymbol symbol : this.getInputSymbols()) {
+            tableOfTransitions[counter][0] = symbol.getInputSymbol();
+            counter++;
+        }
+        counter = 1;
+        for (State state : this.getInitialStates()) {
+            tableOfTransitions[0][counter] = state.getStateName();
+            counter++;
+        }
+        return tableOfTransitions;
+    }
 }
