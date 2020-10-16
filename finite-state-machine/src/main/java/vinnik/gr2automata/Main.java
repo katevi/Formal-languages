@@ -24,14 +24,9 @@ public class Main {
         Grammar grammar = parser.readGrammarFromFile();
         AutomataBuilder builder = new AutomataBuilder();
         Automata automata = builder.buildAutomata(grammar);
+
         String[][] tableOfTransitions = automata.buildTableOfTransitions();
-        System.out.println("Filling table...");
-        for (int i = 0; i < tableOfTransitions.length; i++) {
-            for (int j = 0; j < tableOfTransitions[0].length; j++) {
-                System.out.format("%40s |", tableOfTransitions[i][j]);
-            }
-            System.out.println();
-        }
+        printTable(tableOfTransitions);
         for (String word : words) {
             if (!automata.recognizeWord(word)) {
                 System.out.println("Word \"" + word + "\" cannot be recognized by automata.");
@@ -39,5 +34,25 @@ public class Main {
                 System.out.println("Word \"" + word + "\" recognized by automata.");
             }
         }
+    }
+
+    private static void printTable(String[][] tableOfTransitions) {
+        int columnWidth = 37;
+        System.out.println("Filling table...");
+        for (int i = 0; i < tableOfTransitions.length; i++) {
+            for (int j = 0; j < (tableOfTransitions[0].length) * columnWidth; j++) {
+                System.out.print("_");
+            }
+            System.out.println();
+            for (int j = 0; j < tableOfTransitions[0].length; j++) {
+                System.out.format("%35s |", tableOfTransitions[i][j]);
+            }
+            System.out.println();
+        }
+
+        for (int j = 0; j < (tableOfTransitions[0].length) * columnWidth; j++) {
+            System.out.print("_");
+        }
+        System.out.println();
     }
 }

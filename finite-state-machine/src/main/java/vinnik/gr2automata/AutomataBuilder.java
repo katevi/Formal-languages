@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 public class AutomataBuilder {
     private final static String EPSILON_STATE = "epsilon";
 
-    private final State attachedState = new State("AState");
+    private final State attachedState = new State("AS");
 
     public Automata buildAutomata(Grammar grammar) {
 

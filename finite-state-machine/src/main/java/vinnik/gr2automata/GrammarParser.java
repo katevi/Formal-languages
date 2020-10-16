@@ -93,7 +93,7 @@ public class GrammarParser {
             }
         }
         parseTerminalRules(terminals, terminalRules);
-        nonterminals.forEach(t -> System.out.print(t.getValue() + " "));
+        /*nonterminals.forEach(t -> System.out.print(t.getValue() + " "));
         System.out.println();
         relations.forEach(t -> System.out.println(t.getOldNonTerminal().getValue()
                 + " "
@@ -101,7 +101,7 @@ public class GrammarParser {
                 + t.getNewNonTerminal().getValue()));
         terminals.forEach(t -> System.out.print(t.getName() + " "));
         System.out.println();
-        System.out.println("Start nonterminal" + startNonTerminal);
+        System.out.println("Start nonterminal" + startNonTerminal);*/
         return new Grammar(relations, nonterminals, terminals, new NonTerminal(startNonTerminal.toString()));
     }
 
