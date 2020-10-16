@@ -25,13 +25,17 @@ public class GrammarParser {
     }
 
     private Grammar parseInput(List<String> grammarStrings) {
+        int separator = grammarStrings.indexOf("#");
+        List<String> rules = grammarStrings.subList(0, separator - 1);
+        List<String> terminalRules = grammarStrings.subList(separator + 1, grammarStrings.size() - 1);
+
         Set<Terminal> terminals = new LinkedHashSet<>();
         Set<NonTerminal> nonterminals = new LinkedHashSet<>();
         Set<Relation> relations = new LinkedHashSet<>();
         StringBuilder startNonTerminal = new StringBuilder();
 
         int stringCounter = 0;
-        for (String string : grammarStrings) {
+        for (String string : rules) {
             int j = 0;
             string = string.replace(" ", "");
             char[] lexemes = string.toCharArray();
@@ -88,6 +92,7 @@ public class GrammarParser {
                 j++;
             }
         }
+        parseTerminalRules(terminals, terminalRules);
         /*nonterminals.forEach(t -> System.out.print(t.getValue() + " "));
         System.out.println();
         relations.forEach(t -> System.out.println(t.getOldNonTerminal().getValue()
@@ -100,6 +105,19 @@ public class GrammarParser {
         return new Grammar(relations, nonterminals, terminals, new NonTerminal(startNonTerminal.toString()));
     }
 
+    private void parseTerminalRules(Set<Terminal> terminals, List<String> terminalRules) {
+        for (String rule : terminalRules) {
+            List<String> values = Arrays.asList(rule.split(" "));
+            String valueName = values.get(0);
+
+            Set<String> setValues = new HashSet<>(values.subList(2, values.size()));
+            if (terminals.stream().anyMatch(t -> t.getName().equals(valueName))) {
+                terminals.removeIf(t -> t.getName().equals(valueName));
+                terminals.add(new Terminal(valueName, setValues));
+            }
+        }
+    }
+
     private void addNonTerminal(Set<NonTerminal> nonterminals, NonTerminal nonTerminal) {
         if (!(nonterminals.stream().anyMatch(t -> t.getValue().equals(nonTerminal.getValue())))) {
             nonterminals.add(nonTerminal);
@@ -107,7 +125,7 @@ public class GrammarParser {
     }
 
     private void addTerminal(Set<Terminal> terminals, Terminal terminal) {
-        if (!(terminals.stream().anyMatch(t -> t.getValue().equals(terminal.getValue())))) {
+        if (!(terminals.stream().anyMatch(t -> t.getName().equals(terminal.getName())))) {
             terminals.add(terminal);
         }
     }

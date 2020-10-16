@@ -14,10 +14,6 @@ public class Main {
             }
             System.out.println();
         }
-        /*for (int j = 0; j < tableOfTransitions.length; j++) {
-            for (int i = 0; i < tableOfTransitions[0].length; i++) {
-                System.out.format("%40s |", tableOfTransitions[j][i]);
-            }
-        }*/
+        System.out.println(automata.recognizeWord("0"));
     }
 }

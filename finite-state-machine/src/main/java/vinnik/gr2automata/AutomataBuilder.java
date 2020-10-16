@@ -9,16 +9,21 @@ public class AutomataBuilder {
 
     public Automata buildAutomata(Grammar grammar) {
 
-        Set<State> initialStates = buildInitalStates(grammar);
+        Set<State> initialStates = buildInternalStates(grammar);
         Set<State> finalStates = buildFinalStates(grammar, attachedState);
         Set<Transition> transitions = buildTransitions(grammar);
         Set<InputSymbol> symbols = buildInputSymbols(grammar);
+        State initialState = buildInitialState(grammar);
 
-        return new Automata(initialStates, finalStates,transitions, symbols);
+        return new Automata(initialStates, finalStates,transitions, symbols, initialState);
+    }
+
+    private State buildInitialState(Grammar grammar) {
+        return new State(grammar.getStartNonterminal().getValue());
     }
 
     private Set<InputSymbol> buildInputSymbols(Grammar grammar) {
-        return grammar.getTerminals().stream().map(t -> new InputSymbol(t.getValue())).collect(Collectors.toSet());
+        return grammar.getTerminals().stream().map(t -> new InputSymbol(t.getName(), t.getPossibleValues())).collect(Collectors.toSet());
     }
 
     private Set<Transition> buildTransitions(Grammar grammar) {
@@ -29,7 +34,7 @@ public class AutomataBuilder {
                 Set<State> newStates = calculateNewStatesInTransition(grammar, nonterminal, terminal);
                 result.add(new Transition(
                         new State(nonterminal.getValue()),
-                        terminal.getValue(),
+                        terminal.getName(),
                         newStates));
             }
         }
@@ -41,7 +46,7 @@ public class AutomataBuilder {
                 .getRelations()
                 .stream()
                 .filter(t -> t.getOldNonTerminal().getValue().equals(nonTerminal.getValue()) &&
-                        t.getTerminal().getValue().equals(terminal.getValue()))
+                        t.getTerminal().getName().equals(terminal.getName()))
                 .map(Relation::getNewNonTerminal)
                 .collect(Collectors.toList());
         Set<State> newStates = possibleNonTerminals
@@ -50,7 +55,7 @@ public class AutomataBuilder {
                 .collect(Collectors.toSet());
         if (hasEmptyState(newStates)) {
             newStates.removeIf(t -> t.getStateName().equals(""));
-            if (terminal.getValue().equals(EPSILON_STATE)) {
+            if (terminal.getName().equals(EPSILON_STATE)) {
                 // if terminal was epsilon, that new state after transition will be old state
                 // (and will be final state)
                 newStates.add(new State(nonTerminal.getValue()));
@@ -67,7 +72,7 @@ public class AutomataBuilder {
         return newStates.stream().anyMatch(t -> t.getStateName().equals(""));
     }
 
-    private Set<State> buildInitalStates(Grammar grammar) {
+    private Set<State> buildInternalStates(Grammar grammar) {
         Set<State> result = new LinkedHashSet<>();
         result
                 .addAll(grammar
@@ -86,7 +91,7 @@ public class AutomataBuilder {
             List<State> finalStates = grammar
                     .getRelations()
                     .stream()
-                    .filter(t -> t.getTerminal().getValue().equals(EPSILON_STATE))
+                    .filter(t -> t.getTerminal().getName().equals(EPSILON_STATE))
                     .map(Relation::getOldNonTerminal)
                     .map(t -> new State(t.getValue()))
                     .collect(Collectors.toList());
@@ -103,7 +108,7 @@ public class AutomataBuilder {
         return grammar
                 .getRelations()
                 .stream()
-                .anyMatch(t -> (t.getTerminal().getValue().equals(EPSILON_STATE) &&
+                .anyMatch(t -> (t.getTerminal().getName().equals(EPSILON_STATE) &&
                         t.getNewNonTerminal().getValue().equals("")));
     }
 }
