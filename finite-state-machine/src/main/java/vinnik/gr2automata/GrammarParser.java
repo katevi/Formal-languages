@@ -26,7 +26,7 @@ public class GrammarParser {
 
     private Grammar parseInput(List<String> grammarStrings) {
         int separator = grammarStrings.indexOf("#");
-        List<String> rules = grammarStrings.subList(0, separator - 1);
+        List<String> rules = grammarStrings.subList(0, separator);
         List<String> terminalRules = grammarStrings.subList(separator + 1, grammarStrings.size() - 1);
 
         Set<Terminal> terminals = new LinkedHashSet<>();
@@ -93,15 +93,15 @@ public class GrammarParser {
             }
         }
         parseTerminalRules(terminals, terminalRules);
-        /*nonterminals.forEach(t -> System.out.print(t.getValue() + " "));
+        nonterminals.forEach(t -> System.out.print(t.getValue() + " "));
         System.out.println();
         relations.forEach(t -> System.out.println(t.getOldNonTerminal().getValue()
                 + " "
-                + t.getTerminal().getValue() + " "
+                + t.getTerminal().getName() + " "
                 + t.getNewNonTerminal().getValue()));
-        terminals.forEach(t -> System.out.print(t.getValue() + " "));
+        terminals.forEach(t -> System.out.print(t.getName() + " "));
         System.out.println();
-        System.out.println("Start nonterminal" + startNonTerminal);*/
+        System.out.println("Start nonterminal" + startNonTerminal);
         return new Grammar(relations, nonterminals, terminals, new NonTerminal(startNonTerminal.toString()));
     }
 
