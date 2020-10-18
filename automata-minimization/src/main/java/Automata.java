@@ -12,7 +12,7 @@ public class Automata {
 
     public void minimize() {
         removeUnreachableStates(states);
-        removeEquivalentStates(states);
+        removeEquivalentStates(states, finalStates);
     }
 
     private void buildStates(String[][] transitionsTable) {
@@ -84,23 +84,23 @@ public class Automata {
         states.forEach(t -> System.out.print(t.getStateName() + " "));
     }
 
-    private void removeEquivalentStates(List<State> states) {
+    private void removeEquivalentStates(List<State> states, List<State> finalStates) {
+        //states.removeAll(finalStates);
         System.out.println("In equivalence");
         states.forEach(t -> System.out.print(t.getStateName() + " "));
         // preventing ConcurrentModificationException during iteration in list
-        List<State> statesCopy = new ArrayList<>(states);
+        List<State> statesCopy = new ArrayList<>();
+        statesCopy.addAll(states);
 
-        Map<String, String> equivalentPairs = new HashMap<>();
         for (State state1 : states) {
-            //statesCopy.removeIf();
-            for (State state2 : states) {
-                if (state1.isEquivalent(state2)) {
-                    equivalentPairs.put(state1.getStateName(), state2.getStateName());
-                }
+            if (statesCopy.removeIf(t -> t.isEquivalent(state1))) {
+                statesCopy.add(state1);
             }
         }
         System.out.println();
-        equivalentPairs.entrySet().forEach(t -> System.out.println(t.getValue() + " " + t.getKey()));
+        System.out.println();
         states.forEach(t -> System.out.print(t.getStateName() + " "));
+        System.out.println();
+        statesCopy.forEach(t -> System.out.print(t.getStateName() + " "));
     }
 }
