@@ -1,19 +1,40 @@
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class State {
     // key is inputSymbol, value is state
     private final Map<String, String> transitions;
     private final String stateName;
+    private final List<String> possibleAlphabet;
 
-    public State(String stateName) {
+    public State(String stateName, List<String> possibleAlphabet) {
         this.stateName = stateName;
+        this.possibleAlphabet = possibleAlphabet;
         this.transitions = new HashMap<>();
     }
 
-    public boolean checkIfStateEquivalent(State state) {
-        for (String input : transitions.keySet()) {
-            if (!transitions.get(input).equals(state.getTransitions().get(input))) {
+    public boolean isEquivalent(State state) {
+        System.out.println(transitions.keySet());
+        for (String input : possibleAlphabet) {
+            System.out.println("State is " + stateName + " check with " + state.getStateName());
+            System.out.println("input = " + input + " " + transitions.get(input) + " " + state.getTransitions().get(input));
+            if (transitions.get(input) == null) {
+                if (state.getTransitions().get(input) != null) {
+                    return false;
+                } else {
+                    continue;
+                }
+            }
+            if (state.getTransitions().get(input) == null) {
+                if (transitions.get(input) != null) {
+                    return false;
+                } else {
+                    continue;
+                }
+            }
+            if (!transitions.get(input).equals(state.getTransitions().get(input))
+                    || state.getStateName().equals(this.getStateName())) {
                 return false;
             }
         }
@@ -24,7 +45,7 @@ public class State {
         return transitions;
     }
 
-    public void addTransition(String state, String input) {
+    public void addTransition(String input, String state) {
         this.transitions.put(input, state);
     }
 
