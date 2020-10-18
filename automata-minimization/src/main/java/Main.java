@@ -8,5 +8,7 @@ public class Main {
             }
             System.out.println();
         }
+        Automata automata = new Automata(table);
+        automata.minimize();
     }
 }
