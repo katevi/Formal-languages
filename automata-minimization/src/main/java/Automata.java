@@ -1,44 +1,79 @@
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Automata {
     private List<State> states;
     private List<State> finalStates;
+    private String[][] transitionsTable;
 
     public Automata(String[][] transitionsTable) {
         states = new ArrayList<>();
         finalStates = new ArrayList<>();
+        this.transitionsTable = transitionsTable;
         buildStates(transitionsTable);
     }
 
-    public void minimize() {
+    public String[][] minimize() {
         removeUnreachableStates(states);
-        removeEquivalentStates(states, finalStates);
+        removeEquivalentStates(states);
+        System.out.println();
+        return generateNewTableTransitions(transitionsTable);
+    }
+
+    private String[][] generateNewTableTransitions(String[][] transitionsTable) {
+        String[][] newTable = new String[transitionsTable.length][states.size() + 1];
+        int width = newTable.length;
+        int height = newTable[0].length;
+        for (int i = 0; i < width; i++) {
+            newTable[i][0] = transitionsTable[i][0];
+        }
+        int counter = 1;
+        for (State state : states) {
+            newTable[0][counter] = state.getStateName();
+            counter++;
+        }
+        for (int i = 1; i < height; i++) {
+            for (int j = 1; j < width; j++) {
+                int finalI = i;
+                State state = states
+                        .stream()
+                        .filter(t -> t.getStateName().equals(newTable[0][finalI]))
+                        .findFirst().orElse(null);
+                if (state != null) {
+                    System.out.println("input = " + newTable[j][0] + " , state  = " + newTable[0][i]);
+                    System.out.println(state.getTransitions().get(newTable[j][0]));
+                    newTable[j][i] = state.getTransitions().get(newTable[j][0]);
+                }
+            }
+        }
+        finalStates.stream().forEach(t -> System.out.println(t.getStateName() + " "));
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                System.out.format("%10s", newTable[j][i]);
+            }
+            System.out.println();
+        }
+
+        return newTable;
     }
 
     private void buildStates(String[][] transitionsTable) {
         int width = transitionsTable.length;
         int height = transitionsTable[0].length;
         List<String> possibleAlphabet = generatePossibleAlphabet(transitionsTable);
-
-        System.out.println(width + " " + height);
         for (int j = 1; j < height; j++) {
             State state = new State(transitionsTable[0][j], possibleAlphabet);
-            System.out.println("state name = " + transitionsTable[0][j]);
             for (int i = 1; i < width; i++) {
                if (!(transitionsTable[i][j].equals("_") || transitionsTable[i][j].equals("#"))) {
                     state.addTransition(transitionsTable[i][0], transitionsTable[i][j]);
-
                } else {
                    if (transitionsTable[i][j].equals("#")) {
                        finalStates.add(state);
                    }
                }
-                System.out.println("Adding transition " + transitionsTable[i][0] + " " + transitionsTable[i][j]);
             }
             states.add(state);
         }
-        states.stream().forEach(t -> System.out.println(t.getStateName() + " " + t.getTransitions()));
-
     }
 
     private List<String> generatePossibleAlphabet(String[][] transitionsTable) {
@@ -70,7 +105,6 @@ public class Automata {
                         unvisitedStates.add(stateName);
                     }
                 }
-                //unvisitedStates.addAll(new ArrayList<>(state.getTransitions().keySet()));
                 System.out.println("Queue now = " + unvisitedStates);
             }
         }
@@ -84,17 +118,41 @@ public class Automata {
         states.forEach(t -> System.out.print(t.getStateName() + " "));
     }
 
-    private void removeEquivalentStates(List<State> states, List<State> finalStates) {
-        //states.removeAll(finalStates);
+    private void removeEquivalentStates(List<State> states) {
         System.out.println("In equivalence");
         states.forEach(t -> System.out.print(t.getStateName() + " "));
-        // preventing ConcurrentModificationException during iteration in list
-        List<State> statesCopy = new ArrayList<>();
-        statesCopy.addAll(states);
+        List<State> statesCopy = new ArrayList<>(states);
 
         for (State state1 : states) {
+            List<String> equivalentStateNames = statesCopy
+                    .stream()
+                    .filter(t -> t.isEquivalent(state1))
+                    .map(t -> t.getStateName()).collect(Collectors.toList());
+            System.out.println("Equivalent state names");
+            equivalentStateNames.forEach(t -> System.out.print(t + " "));
             if (statesCopy.removeIf(t -> t.isEquivalent(state1))) {
                 statesCopy.add(state1);
+                finalStates.removeIf(t -> t.isEquivalent(state1));
+                finalStates.add(state1);
+            }
+            if (equivalentStateNames.isEmpty()) {
+                continue;
+            }
+            String finalName = state1.getStateName();
+            System.out.println("FINAL NAME = " + finalName);
+            for (State state : statesCopy) {
+                for (String name : equivalentStateNames) {
+                    if (state.getTransitions().containsValue(name)) {
+                        List<Map.Entry<String,String>> transitionsToRename =
+                                state.getTransitions().entrySet().stream().filter(t -> t.getValue().equals(name)).collect(Collectors.toList());
+                        for (Map.Entry<String, String> transition : transitionsToRename) {
+                            System.out.println("Renaming : " + transition.getKey() + " " + transition.getValue());
+                            System.out.println(state.getTransitions());
+                            state.modifyTransition(transition.getKey(), finalName);
+                            System.out.println("Modified transitions " + state.getTransitions());
+                        }
+                    }
+                }
             }
         }
         System.out.println();
@@ -102,5 +160,8 @@ public class Automata {
         states.forEach(t -> System.out.print(t.getStateName() + " "));
         System.out.println();
         statesCopy.forEach(t -> System.out.print(t.getStateName() + " "));
+        states.clear();
+        states.addAll(statesCopy);
+        states.forEach(t -> System.out.print(t.getTransitions() + " "));
     }
 }
