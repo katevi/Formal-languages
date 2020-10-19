@@ -7,6 +7,11 @@ public class State {
     private final Map<String, String> transitions;
     private String stateName;
     private final List<String> possibleAlphabet;
+    private boolean isFinal = false;
+
+    public void setFinal() {
+        isFinal = true;
+    }
 
     public State(String stateName, List<String> possibleAlphabet) {
         this.stateName = stateName;
@@ -33,8 +38,7 @@ public class State {
                     continue;
                 }
             }
-            if (!transitions.get(input).equals(state.getTransitions().get(input))
-                    /*|| state.getStateName().equals(this.getStateName())*/) {
+            if (!transitions.get(input).equals(state.getTransitions().get(input))) {
                 return false;
             }
         }

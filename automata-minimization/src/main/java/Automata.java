@@ -16,7 +16,6 @@ public class Automata {
     public String[][] minimize() {
         removeUnreachableStates(states);
         removeEquivalentStates(states);
-        System.out.println();
         return generateNewTableTransitions(transitionsTable);
     }
 
@@ -68,6 +67,7 @@ public class Automata {
                     state.addTransition(transitionsTable[i][0], transitionsTable[i][j]);
                } else {
                    if (transitionsTable[i][j].equals("#")) {
+                       state.addTransition(transitionsTable[i][0], transitionsTable[i][j]);
                        finalStates.add(state);
                    }
                }
@@ -101,7 +101,7 @@ public class Automata {
                 System.out.println("new states in queue = "
                             + new ArrayList<>(state.getTransitions().keySet()));
                 for (String stateName : state.getTransitions().values()) {
-                    if (!visitedStates.contains(stateName)) {
+                    if (!visitedStates.contains(stateName) && !stateName.equals("#")) {
                         unvisitedStates.add(stateName);
                     }
                 }
@@ -132,8 +132,8 @@ public class Automata {
             equivalentStateNames.forEach(t -> System.out.print(t + " "));
             if (statesCopy.removeIf(t -> t.isEquivalent(state1))) {
                 statesCopy.add(state1);
-                finalStates.removeIf(t -> t.isEquivalent(state1));
-                finalStates.add(state1);
+                /*finalStates.removeIf(t -> t.isEquivalent(state1));
+                finalStates.add(state1);*/
             }
             if (equivalentStateNames.isEmpty()) {
                 continue;
@@ -143,7 +143,7 @@ public class Automata {
             for (State state : statesCopy) {
                 for (String name : equivalentStateNames) {
                     if (state.getTransitions().containsValue(name)) {
-                        List<Map.Entry<String,String>> transitionsToRename =
+                        List<Map.Entry<String, String>> transitionsToRename =
                                 state.getTransitions().entrySet().stream().filter(t -> t.getValue().equals(name)).collect(Collectors.toList());
                         for (Map.Entry<String, String> transition : transitionsToRename) {
                             System.out.println("Renaming : " + transition.getKey() + " " + transition.getValue());
