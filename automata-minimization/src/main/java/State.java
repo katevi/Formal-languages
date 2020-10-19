@@ -20,10 +20,7 @@ public class State {
     }
 
     public boolean isEquivalent(State state) {
-        System.out.println(transitions.keySet());
         for (String input : possibleAlphabet) {
-            System.out.println("State is " + stateName + " check with " + state.getStateName());
-            System.out.println("input = " + input + " " + transitions.get(input) + " " + state.getTransitions().get(input));
             if (transitions.get(input) == null) {
                 if (state.getTransitions().get(input) != null) {
                     return false;
@@ -58,9 +55,7 @@ public class State {
     }
 
     public void modifyTransition(String input, String renamedState) {
-        System.out.println("1 " + this.getTransitions().get(input));
         this.transitions.replace(input, renamedState);
-        System.out.println("2 " + this.getTransitions().get(input));
     }
 
     public String getStateName() {

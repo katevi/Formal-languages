@@ -39,18 +39,9 @@ public class Automata {
                         .filter(t -> t.getStateName().equals(newTable[0][finalI]))
                         .findFirst().orElse(null);
                 if (state != null) {
-                    System.out.println("input = " + newTable[j][0] + " , state  = " + newTable[0][i]);
-                    System.out.println(state.getTransitions().get(newTable[j][0]));
                     newTable[j][i] = state.getTransitions().get(newTable[j][0]);
                 }
             }
-        }
-        finalStates.stream().forEach(t -> System.out.println(t.getStateName() + " "));
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                System.out.format("%10s", newTable[j][i]);
-            }
-            System.out.println();
         }
 
         return newTable;
@@ -63,9 +54,8 @@ public class Automata {
         for (int j = 1; j < height; j++) {
             State state = new State(transitionsTable[0][j], possibleAlphabet);
             for (int i = 1; i < width; i++) {
-               if (!(transitionsTable[i][j].equals("_") || transitionsTable[i][j].equals("#"))) {
+               if (!(transitionsTable[i][j].equals("_"))) {
                     state.addTransition(transitionsTable[i][0], transitionsTable[i][j]);
-               } else {
                    if (transitionsTable[i][j].equals("#")) {
                        state.addTransition(transitionsTable[i][0], transitionsTable[i][j]);
                        finalStates.add(state);
@@ -93,34 +83,20 @@ public class Automata {
 
         while (!unvisitedStates.isEmpty()) {
             String currentStateName = unvisitedStates.poll();
-            System.out.println("current state is = " + currentStateName);
             if (!visitedStates.contains(currentStateName)) {
-                System.out.println("current state is = " + currentStateName + " and it was not in visited");
                 visitedStates.add(currentStateName);
                 State state = states.stream().filter(t -> t.getStateName().equals(currentStateName)).findFirst().orElse(null);
-                System.out.println("new states in queue = "
-                            + new ArrayList<>(state.getTransitions().keySet()));
                 for (String stateName : state.getTransitions().values()) {
                     if (!visitedStates.contains(stateName) && !stateName.equals("#")) {
                         unvisitedStates.add(stateName);
                     }
                 }
-                System.out.println("Queue now = " + unvisitedStates);
             }
         }
-        System.out.print("visited states = ");
-        visitedStates.forEach(t -> System.out.print(t + " "));
-        System.out.println();
-        states.forEach(t -> System.out.print(t.getStateName() + " "));
-        System.out.println(visitedStates.contains("q2"));
         states.removeIf(t -> !visitedStates.contains(t.getStateName()));
-        System.out.println();
-        states.forEach(t -> System.out.print(t.getStateName() + " "));
     }
 
     private void removeEquivalentStates(List<State> states) {
-        System.out.println("In equivalence");
-        states.forEach(t -> System.out.print(t.getStateName() + " "));
         List<State> statesCopy = new ArrayList<>(states);
 
         for (State state1 : states) {
@@ -128,40 +104,26 @@ public class Automata {
                     .stream()
                     .filter(t -> t.isEquivalent(state1))
                     .map(t -> t.getStateName()).collect(Collectors.toList());
-            System.out.println("Equivalent state names");
-            equivalentStateNames.forEach(t -> System.out.print(t + " "));
             if (statesCopy.removeIf(t -> t.isEquivalent(state1))) {
                 statesCopy.add(state1);
-                /*finalStates.removeIf(t -> t.isEquivalent(state1));
-                finalStates.add(state1);*/
             }
             if (equivalentStateNames.isEmpty()) {
                 continue;
             }
             String finalName = state1.getStateName();
-            System.out.println("FINAL NAME = " + finalName);
             for (State state : statesCopy) {
                 for (String name : equivalentStateNames) {
                     if (state.getTransitions().containsValue(name)) {
                         List<Map.Entry<String, String>> transitionsToRename =
                                 state.getTransitions().entrySet().stream().filter(t -> t.getValue().equals(name)).collect(Collectors.toList());
                         for (Map.Entry<String, String> transition : transitionsToRename) {
-                            System.out.println("Renaming : " + transition.getKey() + " " + transition.getValue());
-                            System.out.println(state.getTransitions());
                             state.modifyTransition(transition.getKey(), finalName);
-                            System.out.println("Modified transitions " + state.getTransitions());
                         }
                     }
                 }
             }
         }
-        System.out.println();
-        System.out.println();
-        states.forEach(t -> System.out.print(t.getStateName() + " "));
-        System.out.println();
-        statesCopy.forEach(t -> System.out.print(t.getStateName() + " "));
         states.clear();
         states.addAll(statesCopy);
-        states.forEach(t -> System.out.print(t.getTransitions() + " "));
     }
 }
