@@ -92,7 +92,6 @@ public class Grammar {
         }
 
         // building other F_i
-        int iteration = 1;
         boolean allSetsRepeated = false;
         while (!allSetsRepeated) {
             for (String nonterminal : firsts.keySet()) {
@@ -118,7 +117,12 @@ public class Grammar {
                     Set<List<String>> cartesianSet = Sets.cartesianProduct(setsForCartesianProduct);
                     Set<String> joinedCartesianSet = cartesianSet.stream().map(t -> String.join("", t)).collect(Collectors.toSet());
                     joinedCartesianSet.stream().forEach(t -> System.out.print(t + " "));
-                    joinedCartesianSet.removeIf(t -> (t.length() > k));
+                    joinedCartesianSet = joinedCartesianSet.stream().map(t -> {
+                        if (t.length() > k) {
+                            return t.substring(0, k);
+                        }
+                        return t;
+                    }).collect(Collectors.toSet());
                     System.out.println();
                     F_i = Sets.union(F_i, joinedCartesianSet);
                     F_i = Sets.union(F_i, F_previous_i);
