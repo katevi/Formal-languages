@@ -93,37 +93,55 @@ public class Grammar {
 
         // building other F_i
         int iteration = 1;
-        for (String nonterminal : firsts.keySet()) {
-            Set<String> F_i = new HashSet<>();
-            int size = firsts.get(nonterminal).size();
-            Set<String> F_previous_i = firsts.get(nonterminal).get(size - 1);
+        boolean allSetsRepeated = false;
+        while (!allSetsRepeated) {
+            for (String nonterminal : firsts.keySet()) {
+                Set<String> F_i = new HashSet<>();
+                int size = firsts.get(nonterminal).size();
+                Set<String> F_previous_i = firsts.get(nonterminal).get(size - 1);
 
-            NonTerminal nonterminal1 = new NonTerminal(nonterminal);
-            List<Relation> relations = getRelationWithGivenOldNonterminal(nonterminal1);
-            for (Relation relation : relations) {
-                List<Set<String>> setsForCartesianProduct = new ArrayList<>();
-                for (Token token : relation.getRightPart()) {
-                    if (token.getType().equals("terminal")) {
-                        Set<String> set = new HashSet<>();
-                        set.add(token.getValue());
-                        setsForCartesianProduct.add(set);
-                        continue;
+                NonTerminal nonterminal1 = new NonTerminal(nonterminal);
+                List<Relation> relations = getRelationWithGivenOldNonterminal(nonterminal1);
+                for (Relation relation : relations) {
+                    List<Set<String>> setsForCartesianProduct = new ArrayList<>();
+                    for (Token token : relation.getRightPart()) {
+                        if (token.getType().equals("terminal")) {
+                            Set<String> set = new HashSet<>();
+                            set.add(token.getValue());
+                            setsForCartesianProduct.add(set);
+                            continue;
+                        }
+                        System.out.println("value of token = " + token.getValue());
+                        System.out.println(firsts.get(token.getValue()));
+                        setsForCartesianProduct.add(firsts.get(token.getValue()).get(size - 1));
                     }
-                    System.out.println("value of token = " + token.getValue());
-                    System.out.println(firsts.get(token.getValue()));
-                    setsForCartesianProduct.add(firsts.get(token.getValue()).get(size - 1));
+                    Set<List<String>> cartesianSet = Sets.cartesianProduct(setsForCartesianProduct);
+                    Set<String> joinedCartesianSet = cartesianSet.stream().map(t -> String.join("", t)).collect(Collectors.toSet());
+                    joinedCartesianSet.stream().forEach(t -> System.out.print(t + " "));
+                    joinedCartesianSet.removeIf(t -> (t.length() > k));
+                    System.out.println();
+                    F_i = Sets.union(F_i, joinedCartesianSet);
+                    F_i = Sets.union(F_i, F_previous_i);
                 }
-                Set<List<String>> cartesianSet =  Sets.cartesianProduct(setsForCartesianProduct);
-                Set<String> joinedCartesianSet = cartesianSet.stream().map(t -> String.join("", t)).collect(Collectors.toSet());
-                joinedCartesianSet.stream().forEach(t -> System.out.print(t + " "));
-                joinedCartesianSet.removeIf(t -> (t.length() > k));
-                System.out.println();
-                F_i = Sets.union(joinedCartesianSet, F_previous_i);
-                //firsts.get(nonterminal).add(Sets.union(joinedCartesianSet, F_previous_i));
+                firsts.get(nonterminal).add(F_i);
             }
-            firsts.get(nonterminal).add(F_i);
+            allSetsRepeated = allSetsRepeated(firsts);
         }
         return firsts;
+    }
+
+    private boolean allSetsRepeated(Map<String, List<Set<String>>> firsts) {
+        for (String nonterminal : firsts.keySet()) {
+            int size = firsts.get(nonterminal).size();
+            if (!setRepeated(firsts.get(nonterminal).get(size - 1), firsts.get(nonterminal).get(size - 2))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean setRepeated(Set<String> set1, Set<String> set2) {
+        return set1.equals(set2);
     }
 
     // Two checks below can be moved in one method, but such implementation is more readable
