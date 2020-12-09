@@ -37,6 +37,7 @@ public class GrammarParser {
             String oldNonterminal = tokens[0];
             if (stringCounter == 0) {
                 startNonTerminal.append(oldNonterminal);
+                nonterminals.add(new NonTerminal(oldNonterminal));
                 stringCounter++;
             }
 

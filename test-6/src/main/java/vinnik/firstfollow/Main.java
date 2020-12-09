@@ -27,7 +27,9 @@ public class Main {
                 System.out.println(t.getRelationPrint()));
 
         grammar.getNonterminals().forEach(t -> System.out.print(t.getValue() + " "));
+        System.out.println();
         grammar.getTerminals().forEach(t -> System.out.print(t.getValue() + " "));
+        System.out.println();
         System.out.println(grammar.getStartNonterminal().getValue());
         grammar.calculateFirsts(2);
     }

@@ -1,8 +1,9 @@
 package vinnik.firstfollow;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import com.google.common.collect.Sets;
+
+import java.nio.file.FileSystemNotFoundException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Grammar {
@@ -39,100 +40,107 @@ public class Grammar {
     }
 
     public void calculateFirsts(int k) {
-        for (NonTerminal nonTerminal : nonterminals) {
+        Map<String, List<Set<String>>> firsts = first(k);
+        System.out.println("Results:");
+        for (String nonterminal : firsts.keySet()) {
+            System.out.println(firsts.get(nonterminal));
+        }
+        /*for (NonTerminal nonTerminal : nonterminals) {
             System.out.print(nonTerminal.getValue() + " : ");
-            for (List<Token> tokens : first(nonTerminal, k)) {
-                for (Token token : tokens) {
-                    System.out.print(token.getValue());
-                }
-                System.out.print(" ");
-            }
-            System.out.println();
-        }
+         //   for (List<Token> tokens : first(nonTerminal, k)) {
+           //     for (Token token : tokens) {
+             //       System.out.print(token.getValue());
+              //  }
+                /System.out.print(" ");
+            //}
+            //System.out.println();
+        }*/
     }
 
-    public List<List<Token>> first(Token token, int k) {
-        List<List<Token>> currentFirsts = new ArrayList<>();
+    public Map<String, List<Set<String>>> first(int k) {
+        Map<String, List<Set<String>>> firsts = new HashMap();
 
-        if (token.getType().equals("terminal")) {
-            List<Token> tokens = new ArrayList<Token>();
-            tokens.add(token);
-            //currentFirsts.add(tokens);
-            addToCurrentFirst(currentFirsts, tokens);
-            return currentFirsts;
+        // init
+        for (NonTerminal nonterminal : nonterminals) {
+            firsts.put(nonterminal.getValue(), new ArrayList<>());
         }
 
-        //token is nonTerminal
-        NonTerminal nonTerminal = new NonTerminal(token.getValue());
+        // initialization of F0
+        for (String nonterminal : firsts.keySet()) {
 
-        List<Relation> relations = getRelationWithGivenOldNonterminal(nonTerminal);
+            Set<String> nonterminalF0 = new HashSet<>();
+            NonTerminal nonterminal1 = new NonTerminal(nonterminal);
 
-        for (Relation relation : relations) {
-            List<Token> newFirst = new ArrayList<>();
-            if (firstTokenIsTerminal(relation)) {
+            List<Relation> relations = getRelationWithGivenOldNonterminal(nonterminal1);
+            for (Relation relation : relations) {
                 if (relationHasKTerminalsFirst(relation, k)) {
-                    if (k > 0) {
-                        newFirst.addAll(relation.getRightPart().subList(0, k));
-                    }
+                    String word = relation.getRightPart().subList(0, k).stream().map(Token::getValue).collect(Collectors.joining());
+                    System.out.println("new word in set " + nonterminal1.getValue() + " " + word);
+                    nonterminalF0.add(word);
+                    continue;
                 }
-                if (relationHasLessThanKTerminalsAndEps(relation, k)) {
-                    int lengthOfRightPart = relation.getRightPart().size();
-                    newFirst.addAll(relation.getRightPart().subList(0, lengthOfRightPart));
-                }
-                addToCurrentFirst(currentFirsts, newFirst);
-            } else {
-                for (Token potentialFirst : relation.getRightPart()) {
-                    for (List<Token> first : first(potentialFirst, k)) {
-                        addToCurrentFirst(currentFirsts, first);
-                    }
+                int amountOfTerminals = relationHasLessThanKTerminalsAndEps(relation, k);
+                if (amountOfTerminals != -1) {
+                    String word = relation.getRightPart().subList(0, amountOfTerminals)
+                            .stream().map(Token::getValue).collect(Collectors.joining());
+                    System.out.println("new word in set" + nonterminal1.getValue() + " " + word);
+                    nonterminalF0.add(word);
+                    continue;
                 }
             }
+            firsts.get(nonterminal).add(nonterminalF0);
         }
-        return currentFirsts;
-    }
 
-    private boolean firstTokenIsTerminal(Relation relation) {
-        return relation.getRightPart().get(0).getType().equals("terminal");
-    }
+        // building other F_i
+        int iteration = 1;
+        for (String nonterminal : firsts.keySet()) {
+            Set<String> F_i = new HashSet<>();
+            int size = firsts.get(nonterminal).size();
+            Set<String> F_previous_i = firsts.get(nonterminal).get(size - 1);
 
-    private void addToCurrentFirst(List<List<Token>> currentFirsts, List<Token> newFirst) {
-        if (currentFirsts.stream().noneMatch(t -> firstsEqual(t, newFirst))) {
-            currentFirsts.add(newFirst);
-        }
-    }
-
-    private boolean firstsEqual(List<Token> tokens1, List<Token> tokens2) {
-        if (tokens1.size() != tokens2.size()) return false;
-        Token[] arr1 = new Token[tokens1.size()];
-        tokens1.toArray(arr1);
-        Token[] arr2 = new Token[tokens2.size()];
-        tokens2.toArray(arr2);
-        for (int i = 0; i < arr1.length; i++) {
-            if (!arr1[i].getValue().equals(arr2[i].getValue())) {
-                return false;
+            NonTerminal nonterminal1 = new NonTerminal(nonterminal);
+            List<Relation> relations = getRelationWithGivenOldNonterminal(nonterminal1);
+            for (Relation relation : relations) {
+                List<Set<String>> setsForCartesianProduct = new ArrayList<>();
+                for (Token token : relation.getRightPart()) {
+                    if (token.getType().equals("terminal")) {
+                        Set<String> set = new HashSet<>();
+                        set.add(token.getValue());
+                        setsForCartesianProduct.add(set);
+                        continue;
+                    }
+                    System.out.println("value of token = " + token.getValue());
+                    System.out.println(firsts.get(token.getValue()));
+                    setsForCartesianProduct.add(firsts.get(token.getValue()).get(size - 1));
+                }
+                Set<List<String>> cartesianSet =  Sets.cartesianProduct(setsForCartesianProduct);
+                Set<String> joinedCartesianSet = cartesianSet.stream().map(t -> String.join("", t)).collect(Collectors.toSet());
+                joinedCartesianSet.stream().forEach(t -> System.out.print(t + " "));
+                joinedCartesianSet.removeIf(t -> (t.length() > k));
+                System.out.println();
+                F_i = Sets.union(joinedCartesianSet, F_previous_i);
+                //firsts.get(nonterminal).add(Sets.union(joinedCartesianSet, F_previous_i));
             }
+            firsts.get(nonterminal).add(F_i);
         }
-        return true;
+        return firsts;
     }
 
     // Two checks below can be moved in one method, but such implementation is more readable
-    private boolean relationHasLessThanKTerminalsAndEps(Relation relation, int k) {
-        System.out.println(relation.getRelationPrint() + "1");
-        Token[] tokens = new Token[relation.getRightPart().size()];
-        relation.getRightPart().toArray(tokens);
+    private int relationHasLessThanKTerminalsAndEps(Relation relation, int k) {
+        //System.out.println(relation.getRelationPrint() + "1");
+        //Token[] tokens = new Token[relation.getRightPart().size()];
+        List<Token> tokens = relation.getRightPart();
 
-        if (tokens.length > k) return false;
-        System.out.println(relation.getRelationPrint() + "2");
+        if (tokens.size() > k) return -1;
+        //System.out.println(relation.getRelationPrint() + "2");
         // do not need to add case, when tokens.length < k, since it is already true
 
-        for (int i = 0; i < tokens.length; i++) {
-            if (tokens[i].getType().equals("nonterminal")) {
-                System.out.println(relation.getRelationPrint() + "3");
-                return false;
-            }
+        if (tokens.stream().anyMatch(t -> t.getType().equals("nonterminal"))) {
+            return -1;
         }
-        System.out.println(relation.getRelationPrint() + "4");
-        return true;
+        //System.out.println(relation.getRelationPrint() + "4");
+        return tokens.size();
     }
 
     private boolean relationHasKTerminalsFirst(Relation relation, int k) {
@@ -140,11 +148,13 @@ public class Grammar {
         if (k > size) return false;
         Token[] tokens = new Token[size];
         relation.getRightPart().toArray(tokens);
-        for (int i = 0; i < k; k++) {
+        for (int i = 0; i < k; i++) {
+           // System.out.println("CURRENT TOKEN IS " + tokens[i].getValue() + " " + tokens[i].getType());
             if (tokens[i].getType().equals("nonterminal")) {
                 return false;
             }
         }
+        //System.out.println(relation.getRelationPrint() + " " + true);
         return true;
     }
 
