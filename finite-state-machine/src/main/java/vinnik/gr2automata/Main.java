@@ -29,9 +29,9 @@ public class Main {
         printTable(tableOfTransitions);
         for (String word : words) {
             if (!automata.recognizeWord(word)) {
-                System.out.println("Word \"" + word + "\" cannot be recognized by automata.");
+                System.out.println("        Word \"" + word + "\" cannot be recognized by automata.");
             } else {
-                System.out.println("Word \"" + word + "\" recognized by automata.");
+                System.out.println("        Word \"" + word + "\" recognized by automata.");
             }
         }
     }
