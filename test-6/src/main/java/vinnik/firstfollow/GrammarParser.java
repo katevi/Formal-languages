@@ -30,10 +30,15 @@ public class GrammarParser {
         Set<NonTerminal> nonterminals = new HashSet<>();
         StringBuilder startNonTerminal = new StringBuilder();
 
+        int stringCounter = 0;
         for (String string : grammarStrings) {
             String[] tokens = string.split(" ");
 
             String oldNonterminal = tokens[0];
+            if (stringCounter == 0) {
+                startNonTerminal.append(oldNonterminal);
+                stringCounter++;
+            }
 
             List<Token> rightPart = new ArrayList<>();
 
@@ -65,6 +70,10 @@ public class GrammarParser {
 
     private boolean isTerminal(String token) {
         return token.matches("[a-z]+");
+    }
+
+    private boolean isEpsilon(String token) {
+        return token.matches("Eps");
     }
 
     private void addNonTerminal(Set<NonTerminal> nonterminals, NonTerminal nonTerminal) {
