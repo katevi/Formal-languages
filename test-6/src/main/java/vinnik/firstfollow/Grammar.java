@@ -109,7 +109,7 @@ public class Grammar {
                         setsForCartesianProduct.add(firsts.get(token.getValue()).get(size - 1));
                     }
                     Set<List<String>> cartesianSet = Sets.cartesianProduct(setsForCartesianProduct);
-                    Set<String> joinedCartesianSet = cartesianSet.stream().filter(t -> !t.isEmpty()).map(t -> String.join("", t)).collect(Collectors.toSet());
+                    Set<String> joinedCartesianSet = cartesianSet.stream()/*.filter(t -> !t.isEmpty())*/.map(t -> String.join("", t)).collect(Collectors.toSet());
                     joinedCartesianSet.stream().forEach(t -> System.out.print(t + " "));
                     joinedCartesianSet = joinedCartesianSet.stream().map(t -> {
                         if (t.length() > k) {
@@ -177,12 +177,12 @@ public class Grammar {
     public void calculateFollows(int k) {
         follows = follow(k);
         System.out.println("Follow:");
-        List<Pair> keysWhereFirstIsStartNonterminal = follows
+        /*List<Pair> keysWhereFirstIsStartNonterminal = follows
                 .keySet()
                 .stream()
                 .filter(t -> t.getFirst().equals(startNonterminal.getValue()))
-                .collect(Collectors.toList());
-        for (Pair key : keysWhereFirstIsStartNonterminal) {
+                .collect(Collectors.toList());*/
+        for (Pair key : follows.keySet()) {
             System.out.print("(" + key.getFirst() + "," + key.getSecond() + ") : ");
             System.out.println(follows.get(key));
         }
@@ -208,38 +208,20 @@ public class Grammar {
                 List<Token> tokens = getAllAfterNewNonterminal(relation, new NonTerminal(key.getSecond()));
                 // IT IS FIRST(alpha), where alpha = word, so, FIRST(ALPHA) = subword of alpha with length k
                 List<Set<String>> setsForCartesianProduct = new ArrayList<>();
-                if (tokens.isEmpty()) {
-                    int size = firsts.get(key.getSecond()).size();
-                    Set<String> set = firsts.get(key.getSecond()).get(size - 1);
-                    setsForCartesianProduct.add(set);
-                } else {
-                    for (Token token : tokens) {
-                        if (token.getType().equals("terminal")) {
-                            Set<String> set = new HashSet<>();
-                            set.add(token.getValue());
-                            setsForCartesianProduct.add(set);
-                            continue;
-                        }
-                        int size = firsts.get(token.getValue()).size();
-                        setsForCartesianProduct.add(firsts.get(token.getValue()).get(size - 1));
+                for (Token token : tokens) {
+                    if (token.getType().equals("terminal")) {
+                        Set<String> set = new HashSet<>();
+                        set.add(token.getValue());
+                        setsForCartesianProduct.add(set);
+                        continue;
                     }
+                    int size = firsts.get(token.getValue()).size();
+                    setsForCartesianProduct.add(firsts.get(token.getValue()).get(size - 1));
                 }
-                /*for (Token token : tokens) {
-                        if (token.getType().equals("terminal")) {
-                            Set<String> set = new HashSet<>();
-                            set.add(token.getValue());
-                            setsForCartesianProduct.add(set);
-                            continue;
-                        }
-                        int size = firsts.get(token.getValue()).size();
-                        setsForCartesianProduct.add(firsts.get(token.getValue()).get(size - 1));
-                   }
-                 */
 
                 Set<List<String>> cartesianSet = Sets.cartesianProduct(setsForCartesianProduct);
                 Set<String> joinedCartesianSet = cartesianSet
                         .stream()
-                        .filter(t -> !t.isEmpty())
                         .map(t -> String.join("", t))
                         .collect(Collectors.toSet());
                 System.out.println("joined cartesian set: " + joinedCartesianSet);
@@ -272,7 +254,6 @@ public class Grammar {
                         if (!token1.getType().equals("nonterminal")) continue;
 
                         // if token is nonterminal then
-                        System.out.println("null? = " + follows.get(new Pair(token1.getValue(), key.getSecond())));
                         Pair pair =  follows.keySet().stream().filter(t -> t.getFirst().equals(token1.getValue())
                                 && t.getSecond().equals(key.getSecond())).findFirst().orElse(null);
                         Set<String> PHI_I_token1_second = follows.get(pair).get(size - 1);
@@ -359,22 +340,11 @@ public class Grammar {
     // only rules kind of A -> alpha B gamma, where alpha and gamma are in V* (words, or empty words) and
     // A - oldNonterminal, B - newnonterminal
     private List<Relation> getRelationWithGivenOldAndNewNonterminal(NonTerminal oldNonterminal, NonTerminal newNonterminal) {
-        //List<Relation> relationsWhichHaveGivenNonterminals =  relations
         return relations
                 .stream()
                 .filter(t -> t.getOldNonTerminal().getValue().equals(oldNonterminal.getValue())
                         && t.getRightPart().stream().anyMatch(s -> s.getValue().equals(newNonterminal.getValue())))
                 .collect(Collectors.toList());
-        /*List<Relation> relationsWhichHaveOnlyGivenNonterminals = relationsWhichHaveGivenNonterminals.stream().filter(t -> t
-                .getRightPart()
-                .stream()
-                .allMatch(s -> s.getType().equals("terminal")
-                        || s.getType().equals("nonterminal") && s.getValue().equals(newNonterminal.getValue()))).collect(Collectors.toList());
-        List<Relation> relationsWhichHaveOneOldAndOneNew = relationsWhichHaveOnlyGivenNonterminals
-                .stream()
-                .filter(t -> t.getRightPart().stream().filter(s -> s.getType().equals("nonterminal")).count() == 1)
-                .collect(Collectors.toList());
-        return relationsWhichHaveOneOldAndOneNew;*/
     }
 
     private List<Token> getAllAfterNewNonterminal(Relation relation, NonTerminal newNonterminal) {
