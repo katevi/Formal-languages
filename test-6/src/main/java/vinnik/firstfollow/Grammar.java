@@ -109,7 +109,7 @@ public class Grammar {
                         setsForCartesianProduct.add(firsts.get(token.getValue()).get(size - 1));
                     }
                     Set<List<String>> cartesianSet = Sets.cartesianProduct(setsForCartesianProduct);
-                    Set<String> joinedCartesianSet = cartesianSet.stream().map(t -> String.join("", t)).collect(Collectors.toSet());
+                    Set<String> joinedCartesianSet = cartesianSet.stream().filter(t -> !t.isEmpty()).map(t -> String.join("", t)).collect(Collectors.toSet());
                     joinedCartesianSet.stream().forEach(t -> System.out.print(t + " "));
                     joinedCartesianSet = joinedCartesianSet.stream().map(t -> {
                         if (t.length() > k) {
