@@ -43,7 +43,6 @@ public class Grammar {
     // FIRST PART
     public void calculateFirsts(int k) {
         firsts = first(k);
-        //Map<String, List<Set<String>>> firsts = first(k);
         System.out.println("First:");
         for (String nonterminal : firsts.keySet()) {
             System.out.print(nonterminal + ": ");
@@ -109,7 +108,7 @@ public class Grammar {
                         setsForCartesianProduct.add(firsts.get(token.getValue()).get(size - 1));
                     }
                     Set<List<String>> cartesianSet = Sets.cartesianProduct(setsForCartesianProduct);
-                    Set<String> joinedCartesianSet = cartesianSet.stream()/*.filter(t -> !t.isEmpty())*/.map(t -> String.join("", t)).collect(Collectors.toSet());
+                    Set<String> joinedCartesianSet = cartesianSet.stream().map(t -> String.join("", t)).collect(Collectors.toSet());
                     joinedCartesianSet.stream().forEach(t -> System.out.print(t + " "));
                     joinedCartesianSet = joinedCartesianSet.stream().map(t -> {
                         if (t.length() > k) {
@@ -205,33 +204,26 @@ public class Grammar {
 
             for (Relation relation : relations) {
                 System.out.print("PAIR (" + key.getFirst() + ", " + key.getSecond() + "), PRINTING TOKENS : ");
-                List<Token> tokens = getAllAfterNewNonterminal(relation, new NonTerminal(key.getSecond()));
-                // IT IS FIRST(alpha), where alpha = word, so, FIRST(ALPHA) = subword of alpha with length k
-                List<Set<String>> setsForCartesianProduct = new ArrayList<>();
-                for (Token token : tokens) {
-                    if (token.getType().equals("terminal")) {
-                        Set<String> set = new HashSet<>();
-                        set.add(token.getValue());
-                        setsForCartesianProduct.add(set);
-                        continue;
+                List<List<Token>> rightParts = getAllAfterNewNonterminal(relation, new NonTerminal(key.getSecond()));
+                for (List<Token> rightPart : rightParts) {
+                    // IT IS FIRST(alpha), where alpha = word, so, FIRST(ALPHA) = subword of alpha with length k
+                    rightPart.forEach(t -> System.out.print(t.getValue() + " " + t.getType() + " "));
+                    System.out.println("end");
+                    List<Set<String>> setsForCartesianProduct = new ArrayList<>();
+                    for (Token token : rightPart) {
+                        if (token.getType().equals("terminal")) {
+                            Set<String> set = new HashSet<>();
+                            set.add(token.getValue());
+                            setsForCartesianProduct.add(set);
+                            continue;
+                        }
+                        int size = firsts.get(token.getValue()).size();
+                        setsForCartesianProduct.add(firsts.get(token.getValue()).get(size - 1));
                     }
-                    int size = firsts.get(token.getValue()).size();
-                    setsForCartesianProduct.add(firsts.get(token.getValue()).get(size - 1));
-                }
 
-                Set<List<String>> cartesianSet = Sets.cartesianProduct(setsForCartesianProduct);
-                Set<String> joinedCartesianSet = cartesianSet
-                        .stream()
-                        .map(t -> String.join("", t))
-                        .collect(Collectors.toSet());
-                System.out.println("joined cartesian set: " + joinedCartesianSet);
-                joinedCartesianSet = joinedCartesianSet.stream().map(t -> {
-                    if (t.length() > k) {
-                        return t.substring(0, k);
-                    }
-                    return t;
-                }).collect(Collectors.toSet());
-                PHI_0 = Sets.union(PHI_0,joinedCartesianSet);
+                    Set<String> joinedCartesianSet = cartesianProductAndJoin(setsForCartesianProduct, k);
+                    PHI_0 = Sets.union(PHI_0, joinedCartesianSet);
+                }
             }
             follows.get(key).add(PHI_0);
             System.out.println("FOLLOWS (" + key.getFirst() + ", " + key.getSecond() + ")  " + follows.get(key));
@@ -249,42 +241,37 @@ public class Grammar {
                 Set<String> PHI_i = new HashSet<>();
                 Set<String> resultSet = new HashSet<>();
                 for (Relation relation : relations) {
-                    List<Set<String>> setsForCartesianProduct = new ArrayList<>();
                     for (Token token1 : relation.getRightPart()) {
+                        List<Set<String>> setsForCartesianProduct = new ArrayList<>();
                         if (!token1.getType().equals("nonterminal")) continue;
 
                         // if token is nonterminal then
                         Pair pair =  follows.keySet().stream().filter(t -> t.getFirst().equals(token1.getValue())
                                 && t.getSecond().equals(key.getSecond())).findFirst().orElse(null);
-                        Set<String> PHI_I_token1_second = follows.get(pair).get(size - 1);
+                        int sizeOfListForPair = follows.get(pair).size();
+                        Set<String> PHI_I_token1_second = follows.get(pair).get(sizeOfListForPair - 1);
+
                         setsForCartesianProduct.add(PHI_I_token1_second);
 
                         int index = relation.getRightPart().indexOf(token1);
+                        System.out.println("token1 = " + token1.getValue() + " " + index);
                         int rightPartSize = relation.getRightPart().size();
                         List<Token> tokens = relation.getRightPart().subList(index + 1, rightPartSize);
-
+                        System.out.println(tokens.size());
                         for (Token nextToken : tokens) {
-                            Set<String> nextSetForCartesianProduct = new HashSet<>();
-                            // first for terminal is terminal
+                                // first for terminal is terminal
                             if (nextToken.getType().equals("terminal")) {
+                                Set<String> nextSetForCartesianProduct = new HashSet<>();
                                 nextSetForCartesianProduct.add(nextToken.getValue());
                                 setsForCartesianProduct.add(nextSetForCartesianProduct);
                                 continue;
                             }
                             // if nonterminal - then take value of first from already calculated firsts
                             int lastFirstIterationNumber = firsts.get(nextToken.getValue()).size();
-                            Set<String> firstForNextToken = firsts.get(nextToken.getValue()).get(lastFirstIterationNumber - 1);
-                            setsForCartesianProduct.add(firstForNextToken);
+                            setsForCartesianProduct.add(firsts.get(nextToken.getValue()).get(lastFirstIterationNumber - 1));
                         }
-                        Set<List<String>> cartesianSet = Sets.cartesianProduct(setsForCartesianProduct);
-                        Set<String> joinedCartesianSet = cartesianSet.stream().map(t -> String.join("", t)).collect(Collectors.toSet());
-                        joinedCartesianSet.stream().forEach(t -> System.out.print(t + " "));
-                        joinedCartesianSet = joinedCartesianSet.stream().map(t -> {
-                            if (t.length() > k) {
-                                return t.substring(0, k);
-                            }
-                            return t;
-                        }).collect(Collectors.toSet());
+                        // if tokens is empty - then we do not need to add to cartesian product
+                        Set<String> joinedCartesianSet = cartesianProductAndJoin(setsForCartesianProduct, k);
                         PHI_i = Sets.union(PHI_i, joinedCartesianSet);
                         // move out of loop?
                         PHI_i = Sets.union(PHI_i, PHI_previous_i);
@@ -296,6 +283,19 @@ public class Grammar {
             followsAllSetsRepeated = followsAllSetsRepeated(follows);
         }
         return follows;
+    }
+
+    private Set<String> cartesianProductAndJoin(List<Set<String>> setsForCartesianProduct, int k) {
+        Set<List<String>> cartesianSet = Sets.cartesianProduct(setsForCartesianProduct);
+        Set<String> joinedCartesianSet = cartesianSet.stream().map(t -> String.join("", t)).collect(Collectors.toSet());
+        joinedCartesianSet.stream().forEach(t -> System.out.print(t + " "));
+        joinedCartesianSet = joinedCartesianSet.stream().map(t -> {
+            if (t.length() > k) {
+                return t.substring(0, k);
+            }
+            return t;
+        }).collect(Collectors.toSet());
+        return joinedCartesianSet;
     }
 
     private boolean followsAllSetsRepeated(Map<Pair, List<Set<String>>> follows) {
@@ -347,14 +347,15 @@ public class Grammar {
                 .collect(Collectors.toList());
     }
 
-    private List<Token> getAllAfterNewNonterminal(Relation relation, NonTerminal newNonterminal) {
-        List<Token> relations =  relation
-                .getRightPart()
-                .stream()
-                .dropWhile(t -> !t.getValue()
-                        .equals(newNonterminal.getValue()))
-                .collect(Collectors.toList());
-        relations.remove(0);
-        return relations;
+    private List<List<Token>> getAllAfterNewNonterminal(Relation relation, NonTerminal newNonterminal) {
+        List<List<Token>> result = new ArrayList<>();
+        List<Token> tokens = relation.getRightPart();
+        for (Token token : tokens) {
+            if (token.getValue().equals(newNonterminal.getValue())) {
+                int index = tokens.indexOf(token);
+                result.add(relation.getRightPart().subList(index, tokens.size() - 1));
+            }
+        }
+        return result;
     }
 }
