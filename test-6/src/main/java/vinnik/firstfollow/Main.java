@@ -23,7 +23,7 @@ public class Main {
         GrammarParser parser = new GrammarParser();
         Grammar grammar = parser.readGrammarFromFile();
 
-        grammar.calculateFirsts(1);
-        grammar.calculateFollows(1);
+        grammar.calculateFirsts(3);
+        grammar.calculateFollows(3);
     }
 }

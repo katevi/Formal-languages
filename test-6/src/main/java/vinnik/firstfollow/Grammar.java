@@ -43,11 +43,12 @@ public class Grammar {
     // FIRST PART
     public void calculateFirsts(int k) {
         firsts = first(k);
-        System.out.println("First:");
+        System.out.println("FIRST");
         for (String nonterminal : firsts.keySet()) {
             int size = firsts.get(nonterminal).size();
-            System.out.print(nonterminal + ": ");
-            System.out.println(firsts.get(nonterminal).get(size - 1));
+            System.out.print(nonterminal + " ");
+            System.out.format(" | %7s ", firsts.get(nonterminal).get(size - 1));
+            System.out.println();
         }
     }
 
@@ -166,13 +167,14 @@ public class Grammar {
     // FOLLOW PART
     public void calculateFollows(int k) {
         follows = follow(k);
-        System.out.println("Follow:");
+        System.out.println("FOLLOW");
         for (Pair key : follows.keySet()) {
-            //if (key.getFirst().equals(startNonterminal.getValue())) {
+            if (key.getFirst().equals(startNonterminal.getValue())) {
                 int size = follows.get(key).size();
-                System.out.print(key.getFirst() + " " + key.getSecond() + ": ");
-                System.out.println(follows.get(key));
-            //}
+                System.out.print(key.getSecond() + " ");
+                System.out.format(" | %7s", follows.get(key).get(size - 1));
+                System.out.println();
+            }
         }
     }
 
