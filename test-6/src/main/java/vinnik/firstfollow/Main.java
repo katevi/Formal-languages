@@ -31,6 +31,7 @@ public class Main {
         grammar.getTerminals().forEach(t -> System.out.print(t.getValue() + " "));
         System.out.println();
         System.out.println(grammar.getStartNonterminal().getValue());
-        grammar.calculateFirsts(3);
+        grammar.calculateFirsts(2);
+        grammar.calculateFollows(2);
     }
 }

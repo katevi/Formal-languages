@@ -2,7 +2,6 @@ package vinnik.firstfollow;
 
 import com.google.common.collect.Sets;
 
-import java.nio.file.FileSystemNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -11,6 +10,8 @@ public class Grammar {
     private final Set<NonTerminal> nonterminals;
     private final Set<Terminal> terminals;
     private final NonTerminal startNonterminal;
+    private Map<String, List<Set<String>>> firsts = new HashMap<>();
+    private Map<Pair, List<Set<String>>> follows = new HashMap<>();
 
     public Grammar(Set<Relation> relations,
                    Set<NonTerminal> nonterminals,
@@ -39,22 +40,15 @@ public class Grammar {
         return startNonterminal;
     }
 
+    // FIRST PART
     public void calculateFirsts(int k) {
-        Map<String, List<Set<String>>> firsts = first(k);
-        System.out.println("Results:");
+        firsts = first(k);
+        //Map<String, List<Set<String>>> firsts = first(k);
+        System.out.println("First:");
         for (String nonterminal : firsts.keySet()) {
+            System.out.print(nonterminal + ": ");
             System.out.println(firsts.get(nonterminal));
         }
-        /*for (NonTerminal nonTerminal : nonterminals) {
-            System.out.print(nonTerminal.getValue() + " : ");
-         //   for (List<Token> tokens : first(nonTerminal, k)) {
-           //     for (Token token : tokens) {
-             //       System.out.print(token.getValue());
-              //  }
-                /System.out.print(" ");
-            //}
-            //System.out.println();
-        }*/
     }
 
     public Map<String, List<Set<String>>> first(int k) {
@@ -171,15 +165,67 @@ public class Grammar {
         Token[] tokens = new Token[size];
         relation.getRightPart().toArray(tokens);
         for (int i = 0; i < k; i++) {
-           // System.out.println("CURRENT TOKEN IS " + tokens[i].getValue() + " " + tokens[i].getType());
             if (tokens[i].getType().equals("nonterminal")) {
                 return false;
             }
         }
-        //System.out.println(relation.getRelationPrint() + " " + true);
         return true;
     }
 
+    // FOLLOW PART
+    public void calculateFollows(int k) {
+        follows = follow(k);
+        System.out.println("Follow:");
+        for (String nonterminal : firsts.keySet()) {
+            System.out.print(nonterminal + ": ");
+            System.out.println(firsts.get(nonterminal));
+        }
+    }
+
+    private Map<Pair, List<Set<String>>> follow(int k) {
+        Map<Pair, List<Set<String>>> follows = new HashMap<>();
+        for (NonTerminal nonTerminal1 : nonterminals) {
+            for (NonTerminal nonTerminal2 : nonterminals) {
+                Pair key = new Pair(nonTerminal1.getValue(), nonTerminal2.getValue());
+                follows.put(key, new ArrayList<>());
+            }
+        }
+
+        // init Phi_0(X,Y)
+        for (Pair key : follows.keySet()) {
+            List<Relation> relations = getRelationWithGivenOldAndNewNonterminal(new NonTerminal(key.getFirst()), new NonTerminal(key.getSecond()));
+            for (Relation relation : relations) {
+                System.out.print("PAIR" + key.getFirst() + " " + key.getSecond() + "PRINTING TOKENS : ");
+                List<Token> tokens = getAllAfterNewNonterminal(relation, new NonTerminal(key.getSecond()));
+                for (Token token : tokens) {
+                    System.out.print(token.getValue() + " ");
+                }
+                System.out.println();
+            }
+        }
+
+        return follows;
+    }
+
+    private static class Pair {
+        private final String first;
+        private final String second;
+        public Pair(String first, String second) {
+            this.first = first;
+            this.second = second;
+        }
+
+        public String getFirst() {
+            return first;
+        }
+
+        public String getSecond() {
+            return second;
+        }
+    }
+
+
+    // HELPER METHODS
     private List<Relation> getRelationWithGivenOldNonterminal(NonTerminal nonterminal) {
         return relations
                 .stream()
@@ -188,5 +234,24 @@ public class Grammar {
                         .getValue()
                         .equals(nonterminal.getValue()))
                 .collect(Collectors.toList());
+    }
+
+    private List<Relation> getRelationWithGivenOldAndNewNonterminal(NonTerminal oldNonterminal, NonTerminal newNonterminal) {
+        return relations
+                .stream()
+                .filter(t -> t.getOldNonTerminal().getValue().equals(oldNonterminal.getValue())
+                        && t.getRightPart().stream().anyMatch(s -> s.getValue().equals(newNonterminal.getValue())))
+                .collect(Collectors.toList());
+    }
+
+    private List<Token> getAllAfterNewNonterminal(Relation relation, NonTerminal newNonterminal) {
+        List<Token> relations =  relation
+                .getRightPart()
+                .stream()
+                .dropWhile(t -> !t.getValue()
+                        .equals(newNonterminal.getValue()))
+                .collect(Collectors.toList());
+        relations.remove(0);
+        return relations;
     }
 }
