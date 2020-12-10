@@ -206,19 +206,36 @@ public class Grammar {
             for (Relation relation : relations) {
                 System.out.print("PAIR (" + key.getFirst() + ", " + key.getSecond() + "), PRINTING TOKENS : ");
                 List<Token> tokens = getAllAfterNewNonterminal(relation, new NonTerminal(key.getSecond()));
-
                 // IT IS FIRST(alpha), where alpha = word, so, FIRST(ALPHA) = subword of alpha with length k
                 List<Set<String>> setsForCartesianProduct = new ArrayList<>();
-                for (Token token : tokens) {
-                    if (token.getType().equals("terminal")) {
-                        Set<String> set = new HashSet<>();
-                        set.add(token.getValue());
-                        setsForCartesianProduct.add(set);
-                        continue;
+                if (tokens.isEmpty()) {
+                    int size = firsts.get(key.getSecond()).size();
+                    Set<String> set = firsts.get(key.getSecond()).get(size - 1);
+                    setsForCartesianProduct.add(set);
+                } else {
+                    for (Token token : tokens) {
+                        if (token.getType().equals("terminal")) {
+                            Set<String> set = new HashSet<>();
+                            set.add(token.getValue());
+                            setsForCartesianProduct.add(set);
+                            continue;
+                        }
+                        int size = firsts.get(token.getValue()).size();
+                        setsForCartesianProduct.add(firsts.get(token.getValue()).get(size - 1));
                     }
-                    int size = firsts.get(token.getValue()).size();
-                    setsForCartesianProduct.add(firsts.get(token.getValue()).get(size - 1));
                 }
+                /*for (Token token : tokens) {
+                        if (token.getType().equals("terminal")) {
+                            Set<String> set = new HashSet<>();
+                            set.add(token.getValue());
+                            setsForCartesianProduct.add(set);
+                            continue;
+                        }
+                        int size = firsts.get(token.getValue()).size();
+                        setsForCartesianProduct.add(firsts.get(token.getValue()).get(size - 1));
+                   }
+                 */
+
                 Set<List<String>> cartesianSet = Sets.cartesianProduct(setsForCartesianProduct);
                 Set<String> joinedCartesianSet = cartesianSet
                         .stream()
