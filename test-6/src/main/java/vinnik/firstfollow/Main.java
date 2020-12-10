@@ -23,14 +23,6 @@ public class Main {
         GrammarParser parser = new GrammarParser();
         Grammar grammar = parser.readGrammarFromFile();
 
-        grammar.getRelations().forEach(t ->
-                System.out.println(t.getRelationPrint()));
-
-        grammar.getNonterminals().forEach(t -> System.out.print(t.getValue() + " "));
-        System.out.println();
-        grammar.getTerminals().forEach(t -> System.out.print(t.getValue() + " "));
-        System.out.println();
-        System.out.println(grammar.getStartNonterminal().getValue());
         grammar.calculateFirsts(1);
         grammar.calculateFollows(1);
     }
