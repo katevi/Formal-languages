@@ -220,8 +220,12 @@ public class Grammar {
                     setsForCartesianProduct.add(firsts.get(token.getValue()).get(size - 1));
                 }
                 Set<List<String>> cartesianSet = Sets.cartesianProduct(setsForCartesianProduct);
-                Set<String> joinedCartesianSet = cartesianSet.stream().map(t -> String.join("", t)).collect(Collectors.toSet());
-                joinedCartesianSet.stream().forEach(t -> System.out.print(t + " "));
+                Set<String> joinedCartesianSet = cartesianSet
+                        .stream()
+                        .filter(t -> !t.isEmpty())
+                        .map(t -> String.join("", t))
+                        .collect(Collectors.toSet());
+                System.out.println("joined cartesian set: " + joinedCartesianSet);
                 joinedCartesianSet = joinedCartesianSet.stream().map(t -> {
                     if (t.length() > k) {
                         return t.substring(0, k);
@@ -229,10 +233,6 @@ public class Grammar {
                     return t;
                 }).collect(Collectors.toSet());
                 PHI_0 = Sets.union(PHI_0,joinedCartesianSet);
-                //String word = tokens.stream().map(Token::getValue).collect(Collectors.joining());
-
-                //System.out.println("word = " + word);
-                //PHI_0.add(word);
             }
             follows.get(key).add(PHI_0);
             System.out.println("FOLLOWS (" + key.getFirst() + ", " + key.getSecond() + ")  " + follows.get(key));
